@@ -1,0 +1,50 @@
+---
+/**
+ * SEO — metadati, Open Graph e dati strutturati di ogni pagina.
+ */
+import { site } from '@/config/site';
+import { url } from '@/utils/url';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Percorso dell'immagine di anteprima in /public */
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
+  noindex?: boolean;
+}
+
+const { title, description = site.description, image = 'og-image.png', type = 'website', noindex = false } = Astro.props;
+const fullTitle = title === site.author ? `${site.author} — ${site.tagline}` : `${title} · ${site.author}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(url(image), Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.author,
+  description: site.demo ? `${site.description} (Profilo dimostrativo)` : site.description,
+  url: new URL(url(), Astro.site).href,
+  affiliation: { '@type': 'EducationalOrganization', name: 'Fondazione Edmund Mach – Centro Istruzione e Formazione', url: 'https://cif.fmach.it' },
+  knowsAbout: ['Viticoltura sostenibile', 'Gestione del vigneto', 'Difesa integrata', 'Agricoltura di precisione'],
+};
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:locale" content={site.locale} />
+<meta property="og:site_name" content={`${site.author} · Portfolio`} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={`${site.author} — ${site.tagline}`} />
+<meta name="twitter:card" content="summary_large_image" />
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

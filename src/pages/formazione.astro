@@ -1,0 +1,255 @@
+---
+/**
+ * ISTRUZIONE E FORMAZIONE
+ * Dati in src/data/education.ts — ogni blocco indica la provenienza.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Visual from '@/components/Visual.astro';
+import Badge from '@/components/Badge.astro';
+import DocumentList from '@/components/DocumentList.astro';
+import { pathway, timeline, knowledge, labs, digitalSkills, digitalScale, certificates } from '@/data/education';
+import { url } from '@/utils/url';
+
+const cvDocs = (await getCollection('documenti', (d) => ['cv-it', 'cv-en', 'lettera-di-presentazione'].includes(d.id)))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  title="Istruzione e formazione"
+  description="Il percorso Tecnico Imprenditore Agricolo (TIA) alla Fondazione Edmund Mach: timeline formativa, conoscenze tecnico-professionali, laboratori, competenze digitali, attestati e CV in italiano e inglese."
+>
+  <PageHero
+    index="03"
+    eyebrow="Istruzione e formazione"
+    lead="Quattro anni tra aula, laboratorio e vigneto. Qui distinguo con chiarezza ciò che descrive il percorso ufficiale da ciò che racconta la mia esperienza."
+    visual={{ scene: 'filari', seed: 5, photo: 'formazione', alt: 'Illustrazione di filari di vite in prospettiva con le montagne all’orizzonte.' }}
+  >
+    <Fragment slot="title">Tra aula e campo, <em>un passo alla volta</em></Fragment>
+  </PageHero>
+
+  <!-- PERCORSO ISTITUZIONALE -->
+  <section class="section section--carta" aria-labelledby="path-title">
+    <div class="container">
+      <SectionHead index="01" label="Il percorso" id="path-title" intro="Sintesi delle informazioni pubblicate dalla Fondazione Edmund Mach sul canale dell’istruzione e formazione professionale.">
+        Il percorso <em>TIA</em>
+      </SectionHead>
+      <div class="grid">
+        <dl class="path lg:span-8">
+          {pathway.facts.map((f, i) => (
+            <div class="path__row" data-reveal style={`--reveal-i:${i % 3}`}>
+              <dt class="label">{f.term}</dt>
+              <dd>{f.text}</dd>
+            </div>
+          ))}
+        </dl>
+        <aside class="sources lg:span-3 lg:start-10" aria-labelledby="src-title" data-reveal>
+          <Badge type="istituzionale" />
+          <h3 id="src-title" class="label sources__title">Fonti</h3>
+          <ul role="list">
+            {pathway.sources.map((s) => (
+              <li><a class="link" href={s.href} rel="external">{s.label}<span class="visually-hidden"> (sito esterno)</span></a></li>
+            ))}
+          </ul>
+          <p class="sources__note">Consultate il {pathway.verifiedOn}. {pathway.verificationNote}</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="section" aria-labelledby="tl-title">
+    <div class="container">
+      <SectionHead index="02" label="Timeline formativa" id="tl-title">Il mio <em>percorso</em></SectionHead>
+      <ol class="tl" role="list">
+        {timeline.map((t, i) => (
+          <li class:list={['tl__item', `tl__item--${t.status.replace(' ', '-')}`]} data-reveal style={`--reveal-i:${i}`}>
+            <p class="tl__period numeral">{t.period}</p>
+            <div class="tl__body">
+              <p class="label tl__status">{t.status}</p>
+              <h3>{t.title}</h3>
+              <p>{t.text}</p>
+              <Badge type={t.provenance} />
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- CONOSCENZE TECNICO-PROFESSIONALI -->
+  <section class="section section--vite" aria-labelledby="kn-title">
+    <div class="container">
+      <SectionHead index="03" label="Conoscenze tecnico-professionali" id="kn-title" intro="Sintesi personale delle aree affrontate. Per il piano di studi ufficiale fanno fede i documenti della scuola.">
+        Cosa ho <em>imparato</em>
+      </SectionHead>
+      <div class="kn">
+        {knowledge.map((k, i) => (
+          <section class="kn__area" data-reveal style={`--reveal-i:${i % 3}`} aria-labelledby={`kn-${i}`}>
+            <h3 id={`kn-${i}`}>{k.area}</h3>
+            <ul role="list">{k.items.map((it) => <li>{it}</li>)}</ul>
+          </section>
+        ))}
+      </div>
+      <p class="kn__badge"><Badge type="dimostrativo" /></p>
+    </div>
+  </section>
+
+  <!-- LABORATORI -->
+  <section class="section" aria-labelledby="lab-title">
+    <div class="container grid labs">
+      <div class="lg:span-5">
+        <SectionHead index="04" label="Attività laboratoriali" id="lab-title" align="stack">Le mani <em>nel suolo</em></SectionHead>
+        <div data-reveal>
+          <Visual scene="suolo" seed={6} photo="laboratorio" alt="Illustrazione di un profilo di suolo con orizzonti, radici, pietre e scala di profondità." ratio="4 / 3" caption="Profilo pedologico: esercitazione del modulo sul suolo" />
+        </div>
+      </div>
+      <ol class="labs__list lg:span-6 lg:start-7" role="list">
+        {labs.map((l, i) => (
+          <li data-reveal style={`--reveal-i:${i}`}>
+            <span class="numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <div><h3>{l.title}</h3><p class="muted">{l.text}</p></div>
+          </li>
+        ))}
+        <li class="labs__more" data-reveal>
+          <a class="arrow-link" href={url('esperienze/modulo-suolo/')}>Scheda del modulo sul suolo <span class="arrow" aria-hidden="true">→</span></a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- COMPETENZE DIGITALI -->
+  <section class="section section--carta" aria-labelledby="dig-title">
+    <div class="container grid">
+      <div class="lg:span-4">
+        <SectionHead index="05" label="Competenze digitali" id="dig-title" align="stack" intro="Livelli in autovalutazione, su una scala da 1 (base) a 4 (avanzato).">
+          Strumenti <em>che uso</em>
+        </SectionHead>
+      </div>
+      <ul class="dig lg:span-7 lg:start-6" role="list">
+        {digitalSkills.map((d, i) => (
+          <li data-reveal style={`--reveal-i:${i % 3}`}>
+            <div class="dig__head">
+              <span class="dig__name">{d.name}</span>
+              <span class="dig__level label">{digitalScale[d.level]}</span>
+            </div>
+            <span class="dig__meter" role="img" aria-label={`Livello ${d.level} su 4: ${digitalScale[d.level]}`}>
+              {[1, 2, 3, 4].map((n) => <span class:list={{ on: n <= d.level }}></span>)}
+            </span>
+            <span class="dig__note muted">{d.note}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ATTESTATI -->
+  <section class="section" aria-labelledby="cert-title">
+    <div class="container">
+      <SectionHead index="06" label="Attestati e certificazioni" id="cert-title" intro="Qui compariranno solo documenti realmente conseguiti. Le voci seguenti sono spazi da completare.">
+        Attestati <em>da caricare</em>
+      </SectionHead>
+      <ul class="certs" role="list">
+        {certificates.map((c, i) => (
+          <li data-reveal style={`--reveal-i:${i}`}>
+            <span class="certs__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h9l4 4v14H6z" stroke-dasharray="3 2"/><path d="M14 3v5h5"/></svg>
+            </span>
+            <div>
+              <h3>{c.title}</h3>
+              <p class="muted">{c.hint}</p>
+            </div>
+            <Badge type="da-completare" />
+          </li>
+        ))}
+      </ul>
+      <p class="certs__link" data-reveal>
+        <a class="arrow-link" href={url('documenti/attestati/')}>Come caricare un attestato <span class="arrow" aria-hidden="true">→</span></a>
+      </p>
+    </div>
+  </section>
+
+  <!-- CV -->
+  <section class="section section--carta" aria-labelledby="cv-title">
+    <div class="container">
+      <SectionHead index="07" label="Curriculum vitae" id="cv-title" intro="Versioni dimostrative in italiano e in inglese, stampabili o salvabili in PDF dal browser.">
+        CV in <em>italiano e inglese</em>
+      </SectionHead>
+      <DocumentList items={cvDocs} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .path { border-top: 1px solid var(--c-vite); }
+  .path__row { display: grid; gap: var(--sp-2); padding-block: var(--sp-5); border-bottom: 1px solid var(--c-linea); }
+  .path__row dt { color: var(--c-bordeaux); padding-top: 0.3rem; }
+  .path__row dd { max-width: 58ch; }
+  @media (min-width: 48rem) { .path__row { grid-template-columns: 10rem 1fr; column-gap: var(--col-gap); } }
+
+  .sources { display: grid; gap: var(--sp-4); align-content: start; justify-items: start; font-size: var(--fs-sm); }
+  .sources__title { color: var(--c-muted); font-family: var(--font-sans); }
+  .sources li + li { margin-top: var(--sp-3); }
+  .sources__note { font-size: var(--fs-xs); color: var(--fg-muted); line-height: 1.55; }
+  @media (min-width: 64rem) { .sources { position: sticky; top: calc(var(--header-h) + 2rem); } }
+
+  .tl { position: relative; }
+  .tl__item { display: grid; gap: var(--sp-3); padding-block: var(--sp-6); border-top: 1px solid var(--c-linea); }
+  .tl__period { font-size: var(--fs-h3); color: var(--c-vite); line-height: 1; }
+  .tl__body { display: grid; gap: var(--sp-3); justify-items: start; max-width: 56ch; }
+  .tl__body h3 { font-size: var(--fs-h3); }
+  .tl__status { color: var(--c-muted); }
+  .tl__item--in-corso .tl__status { color: var(--c-bordeaux); }
+  .tl__item--in-corso .tl__status::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c-bordeaux); margin-right: 0.5em; vertical-align: 0.05em; }
+  .tl__item--futuro { opacity: 0.8; }
+  .tl__item--futuro .tl__period { font-style: italic; }
+  @media (min-width: 48rem) { .tl__item { grid-template-columns: 5fr 7fr; column-gap: var(--col-gap); } }
+
+  .kn { display: grid; gap: var(--sp-6) var(--col-gap); }
+  .kn__area h3 { font-size: var(--fs-h4); padding-bottom: var(--sp-3); border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 25%, transparent); }
+  .kn__area li { padding-block: var(--sp-2); font-size: var(--fs-sm); color: var(--c-salvia); }
+  .kn__badge { margin-top: var(--sp-7); }
+  @media (min-width: 48rem) { .kn { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) { .kn { grid-template-columns: repeat(5, 1fr); } }
+
+  .labs { align-items: start; }
+  .labs__list li { display: grid; grid-template-columns: 3rem 1fr; gap: var(--sp-4); padding-block: var(--sp-5); border-bottom: 1px solid var(--c-linea); }
+  .labs__list li:first-child { border-top: 1px solid var(--c-linea); }
+  .labs__list .numeral { color: var(--c-bordeaux); font-size: var(--fs-h4); line-height: 1.2; }
+  .labs__list h3 { font-size: var(--fs-h4); margin-bottom: var(--sp-1); }
+  .labs__list p { font-size: var(--fs-sm); }
+  .labs__list .labs__more { display: block; border: 0; }
+  @media (min-width: 64rem) { .labs__list { margin-top: 9rem; } }
+
+  .dig li { display: grid; gap: var(--sp-2); padding-block: var(--sp-4); border-bottom: 1px solid var(--c-linea); }
+  .dig li:first-child { border-top: 1px solid var(--c-linea); }
+  .dig__head { display: flex; justify-content: space-between; gap: var(--sp-4); align-items: baseline; }
+  .dig__name { font-family: var(--font-serif); font-size: var(--fs-h4); color: var(--c-vite); }
+  .dig__level { color: var(--c-bordeaux); }
+  .dig__meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .dig__meter span { height: 4px; background: var(--c-linea); }
+  .dig__meter span.on { background: var(--c-vite); }
+  .dig__note { font-size: var(--fs-xs); }
+
+  .certs { display: grid; gap: var(--sp-4); }
+  .certs li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-3) var(--sp-4);
+    align-items: start;
+    padding: var(--sp-5);
+    border: 1px dashed var(--c-linea);
+    background: repeating-linear-gradient(135deg, transparent 0 12px, color-mix(in srgb, var(--c-carta) 60%, transparent) 12px 13px);
+  }
+  .certs li > :global(.badge) { grid-column: 2; justify-self: start; }
+  .certs__icon { color: var(--c-bordeaux); padding-top: 0.2rem; }
+  .certs h3 { font-size: var(--fs-h4); }
+  .certs p { font-size: var(--fs-sm); margin-top: var(--sp-1); }
+  .certs__link { margin-top: var(--sp-5); }
+  @media (min-width: 48rem) {
+    .certs li { grid-template-columns: auto 1fr auto; align-items: center; }
+    .certs li > :global(.badge) { grid-column: 3; }
+  }
+</style>

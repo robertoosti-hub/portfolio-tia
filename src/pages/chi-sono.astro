@@ -1,0 +1,189 @@
+---
+/**
+ * CHI SONO — biografia, motivazioni, valori, competenze trasversali, obiettivi.
+ * I testi sono in src/data/profile.ts
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Badge from '@/components/Badge.astro';
+import { profile } from '@/data/profile';
+import { url } from '@/utils/url';
+---
+
+<BaseLayout
+  title="Chi sono"
+  description="La storia di Matteo Ferrari: cresciuto tra i terrazzamenti della Val di Cembra, studente TIA alla Fondazione Edmund Mach. Motivazioni, valori e obiettivi professionali."
+  type="profile"
+>
+  <PageHero
+    index="01"
+    eyebrow="Chi sono"
+    lead="Diciotto anni, una valle di terrazzamenti e una domanda che mi accompagna da qualche vendemmia: come si resta, e si lavora bene, in montagna?"
+    visual={profile.portrait}
+  >
+    <Fragment slot="title">Cresciuto tra <em>i filari</em>, scelgo di restarci</Fragment>
+    <p class="hero-note" data-reveal style="--reveal-i:3"><Badge type="dimostrativo" /> Biografia di un personaggio fittizio, scritta come modello.</p>
+  </PageHero>
+
+  <!-- BIOGRAFIA -->
+  <section class="section bio" aria-labelledby="bio-title">
+    <div class="container grid">
+      <aside class="bio__aside lg:span-4">
+        <h2 id="bio-title" class="label bio__label">La mia storia</h2>
+        <blockquote class="bio__quote" data-reveal>
+          <p>“Si è sempre fatto così” è un buon punto di partenza, <em>non una risposta.</em></p>
+        </blockquote>
+      </aside>
+      <div class="prose bio__text lg:span-7 lg:start-6">
+        {profile.bio.map((p, i) => <p data-reveal class:list={{ 'bio__first': i === 0 }}>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTIVAZIONI -->
+  <section class="section section--carta" aria-labelledby="mot-title">
+    <div class="container">
+      <SectionHead index="02" label="Motivazioni" id="mot-title">Perché ho scelto <em>l’agricoltura</em></SectionHead>
+      <ol class="motives" role="list">
+        {profile.motivations.map((m, i) => (
+          <li class="motive" data-reveal style={`--reveal-i:${i}`}>
+            <span class="motive__num numeral" aria-hidden="true">{['I', 'II', 'III'][i]}</span>
+            <h3 class="motive__title">{m.title}</h3>
+            <p>{m.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- VALORI -->
+  <section class="section section--vite" aria-labelledby="val-title">
+    <div class="container">
+      <SectionHead index="03" label="Valori" id="val-title" intro="Cinque parole che uso davvero, con l’esempio concreto da cui nascono.">
+        Quello che il vigneto <em>mi ha insegnato</em>
+      </SectionHead>
+      <dl class="values">
+        {profile.values.map((v, i) => (
+          <div class="value" data-reveal style={`--reveal-i:${i % 3}`}>
+            <dt>{v.term}</dt>
+            <dd>{v.text}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <!-- COMPETENZE TRASVERSALI E LINGUE -->
+  <section class="section" aria-labelledby="soft-title">
+    <div class="container grid">
+      <div class="lg:span-7">
+        <SectionHead index="04" label="Competenze trasversali" id="soft-title" align="stack">Come <em>lavoro</em></SectionHead>
+        <ul class="soft" role="list">
+          {profile.softSkills.map((s, i) => (
+            <li data-reveal style={`--reveal-i:${i % 3}`}>
+              <span class="soft__name">{s.name}</span>
+              <span class="soft__note muted">{s.note}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="lang lg:span-4 lg:start-9">
+        <h3 class="label lang__title" data-reveal>Lingue</h3>
+        <ul role="list" class="lang__list">
+          {profile.languages.map((l) => (
+            <li data-reveal><span class="lang__name">{l.name}</span><span class="muted">{l.level}</span></li>
+          ))}
+        </ul>
+        <p class="lang__note muted" data-reveal>
+          I livelli sono un’autovalutazione secondo il Quadro comune europeo (QCER), non certificazioni.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OBIETTIVI -->
+  <section class="section section--carta" aria-labelledby="goal-title">
+    <div class="container">
+      <SectionHead index="05" label="Obiettivi professionali" id="goal-title">Dove voglio <em>arrivare</em></SectionHead>
+      <ol class="goals" role="list">
+        {profile.goals.map((g, i) => (
+          <li class="goal" data-reveal style={`--reveal-i:${i}`}>
+            <p class="label goal__when">{g.horizon}</p>
+            <h3 class="goal__title">{g.title}</h3>
+            <p>{g.text}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="next" data-reveal>
+        <a class="btn" href={url('progetto/')}>Il progetto “Terrazze vive” <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="arrow-link" href={url('formazione/')}>Il mio percorso di studi <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-top: var(--sp-6); font-size: var(--fs-xs); color: var(--fg-muted); }
+
+  .bio__label { color: var(--c-bordeaux); font-family: var(--font-sans); }
+  .bio__quote {
+    margin-top: var(--sp-6);
+    font-family: var(--font-serif);
+    font-size: var(--fs-h3);
+    line-height: 1.2;
+    color: var(--c-vite);
+    padding-left: var(--sp-5);
+    border-left: 2px solid var(--c-bordeaux);
+  }
+  .bio__quote em { color: var(--c-bordeaux); }
+  @media (min-width: 64rem) { .bio__aside { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; } }
+  .bio__text { font-size: var(--fs-lead); line-height: 1.6; font-family: var(--font-serif); font-weight: 330; }
+  .bio__first::first-line { font-variant: small-caps; letter-spacing: 0.04em; }
+
+  .motives { display: grid; gap: var(--sp-7); }
+  .motive { display: grid; gap: var(--sp-3); max-width: 34ch; }
+  .motive__num { font-size: var(--fs-h2); font-style: italic; color: var(--c-bordeaux); line-height: 1; }
+  .motive__title { font-size: var(--fs-h4); }
+  @media (min-width: 48rem) {
+    .motives { grid-template-columns: repeat(3, 1fr); column-gap: var(--col-gap); }
+    .motive:nth-child(2) { transform: translateY(3rem); }
+  }
+
+  .values { display: grid; }
+  .value {
+    display: grid;
+    gap: var(--sp-2);
+    padding-block: var(--sp-5);
+    border-top: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent);
+  }
+  .value dt { font-family: var(--font-serif); font-size: var(--fs-h2); font-weight: 300; line-height: 1; letter-spacing: -0.02em; transition: color var(--dur); }
+  .value dd { color: var(--c-salvia); max-width: 44ch; }
+  .value:hover dt { color: var(--c-salvia); font-style: italic; }
+  @media (min-width: 48rem) {
+    .value { grid-template-columns: 5fr 6fr; align-items: baseline; column-gap: var(--col-gap); }
+  }
+
+  .soft { display: grid; border-top: 1px solid var(--c-linea); }
+  .soft li { display: grid; gap: 0.15rem; padding-block: var(--sp-4); border-bottom: 1px solid var(--c-linea); }
+  .soft__name { font-family: var(--font-serif); font-size: var(--fs-h4); color: var(--c-vite); }
+  .soft__note { font-size: var(--fs-sm); }
+  @media (min-width: 48rem) {
+    .soft { grid-template-columns: 1fr 1fr; column-gap: var(--col-gap); }
+  }
+
+  .lang { align-self: end; }
+  .lang__title { color: var(--c-bordeaux); font-family: var(--font-sans); margin-bottom: var(--sp-4); }
+  .lang__list li { display: flex; justify-content: space-between; gap: var(--sp-4); padding-block: var(--sp-3); border-bottom: 1px solid var(--c-linea); font-size: var(--fs-sm); }
+  .lang__name { font-weight: 600; }
+  .lang__note { margin-top: var(--sp-4); font-size: var(--fs-xs); }
+
+  .goals { display: grid; gap: var(--sp-6); counter-reset: goal; }
+  .goal { position: relative; display: grid; gap: var(--sp-3); padding-top: var(--sp-5); border-top: 2px solid var(--c-vite); }
+  .goal::before { content: ''; position: absolute; top: -7px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--c-bordeaux); }
+  .goal__when { color: var(--c-bordeaux); }
+  .goal__title { font-size: var(--fs-h3); }
+  @media (min-width: 48rem) { .goals { grid-template-columns: repeat(3, 1fr); column-gap: var(--col-gap); } }
+
+  .next { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-5); margin-top: var(--sp-9); }
+</style>

@@ -1,0 +1,90 @@
+---
+/**
+ * ELENCO ESPERIENZE — righe editoriali (non card) con data, titolo e categoria.
+ * Al passaggio del mouse compare un'anteprima dell'immagine (solo desktop).
+ */
+import type { CollectionEntry } from 'astro:content';
+import Visual from './Visual.astro';
+import { url, formatPeriod } from '@/utils/url';
+
+interface Props { items: CollectionEntry<'esperienze'>[]; headingLevel?: 'h2' | 'h3'; }
+const { items, headingLevel: H = 'h3' } = Astro.props;
+---
+
+<ol class="xp-list" role="list">
+  {items.map((item, i) => (
+    <li class="xp-row" data-reveal style={`--reveal-i:${i % 4}`}>
+      <a class="xp-row__link" href={url(`esperienze/${item.id}/`)}>
+        <span class="xp-row__date label">{formatPeriod(item.data.start, item.data.end)}</span>
+        <span class="xp-row__main">
+          <H class="xp-row__title">{item.data.title}</H>
+          <span class="xp-row__summary muted">{item.data.summary}</span>
+        </span>
+        <span class="xp-row__cat label">{item.data.category}</span>
+        <span class="xp-row__arrow" aria-hidden="true">→</span>
+        <span class="xp-row__preview" aria-hidden="true">
+          <Visual {...item.data.visuals[0]} alt="" ratio="4 / 5" sizes="16rem" showCaption={false} />
+        </span>
+      </a>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .xp-list { border-top: 1px solid var(--c-linea); }
+  .xp-row { border-bottom: 1px solid var(--c-linea); }
+  .xp-row__link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--sp-2) var(--sp-5);
+    padding-block: var(--sp-5);
+    text-decoration: none;
+    color: inherit;
+  }
+  .xp-row__date { grid-column: 1 / -1; color: var(--accent); }
+  .xp-row__main { display: grid; gap: var(--sp-2); }
+  .xp-row__title {
+    font-size: var(--fs-h4);
+    font-weight: 380;
+    transition: color var(--dur-fast), transform var(--dur) var(--ease-out);
+  }
+  .xp-row__summary { font-size: var(--fs-sm); max-width: 58ch; }
+  .xp-row__cat { display: none; color: var(--fg-muted); }
+  .xp-row__arrow {
+    align-self: center;
+    font-size: 1.5rem;
+    color: var(--heading);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .xp-row__preview { display: none; }
+
+  .xp-row__link:hover .xp-row__title,
+  .xp-row__link:focus-visible .xp-row__title { color: var(--c-bordeaux); }
+  .xp-row__link:hover .xp-row__arrow,
+  .xp-row__link:focus-visible .xp-row__arrow { transform: translateX(0.4rem); }
+
+  @media (min-width: 48rem) {
+    .xp-row__link { grid-template-columns: 13rem 1fr 10rem 2rem; align-items: baseline; padding-block: var(--sp-6); }
+    .xp-row__date { grid-column: auto; }
+    .xp-row__cat { display: block; }
+    .xp-row__title { font-size: var(--fs-h3); }
+  }
+
+  @media (min-width: 64rem) and (hover: hover) {
+    .xp-row__preview {
+      display: block;
+      position: absolute;
+      right: 14rem;
+      top: 50%;
+      width: 13rem;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-45%) rotate(-3deg) scale(0.92);
+      transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+      box-shadow: 0 1.5rem 3rem -1rem rgb(38 40 35 / 0.35);
+    }
+    .xp-row__link:hover .xp-row__preview { opacity: 1; transform: translateY(-50%) rotate(-2deg) scale(1); }
+  }
+</style>

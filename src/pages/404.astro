@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Visual from '@/components/Visual.astro';
+import { url } from '@/utils/url';
+---
+
+<BaseLayout title="Pagina non trovata" noindex>
+  <section class="container nf">
+    <div class="nf__text">
+      <p class="label">Errore 404</p>
+      <h1>Questo filare <em>non esiste</em></h1>
+      <p class="lead">La pagina che cerchi è stata spostata o l’indirizzo non è corretto.</p>
+      <a class="btn" href={url()}>Torna alla home <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+    <div class="nf__art"><Visual scene="filari" seed={404} alt="" ratio="4 / 3" showCaption={false} /></div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf { display: grid; gap: var(--sp-7); align-items: center; padding-block: var(--sp-8) var(--section); }
+  .nf .label { color: var(--c-bordeaux); }
+  .nf h1 { margin-block: var(--sp-4) var(--sp-5); }
+  .nf .btn { margin-top: var(--sp-6); }
+  @media (min-width: 64rem) { .nf { grid-template-columns: 1fr 1fr; } }
+</style>

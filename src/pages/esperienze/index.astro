@@ -1,0 +1,92 @@
+---
+/**
+ * ESPERIENZE — indice con filtro per categoria.
+ * Il filtro è un miglioramento progressivo: senza JavaScript
+ * l'elenco completo resta visibile e navigabile.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import ExperienceList from '@/components/ExperienceList.astro';
+import Badge from '@/components/Badge.astro';
+
+const items = (await getCollection('esperienze')).sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf());
+const categories = [...new Set(items.map((i) => i.data.category))];
+---
+
+<BaseLayout
+  title="Esperienze"
+  description="Stage aziendale, potatura, vendemmia, monitoraggio fitosanitario, moduli formativi ed elaborati: le esperienze formative e professionali di Matteo Ferrari."
+>
+  <PageHero
+    index="04"
+    eyebrow="Esperienze"
+    lead="Ogni scheda segue la stessa struttura: contesto, cosa ho fatto, cosa ho imparato, competenze sviluppate, immagini e documenti collegati."
+  >
+    <Fragment slot="title">Quello che ho imparato <em>facendo</em></Fragment>
+    <p class="hero-note" data-reveal style="--reveal-i:3"><Badge type="dimostrativo" /> Esperienze simulate, plausibili per un quarto anno TIA.</p>
+  </PageHero>
+
+  <section class="section xp" aria-labelledby="xp-list-title">
+    <div class="container">
+      <div class="xp__bar">
+        <h2 id="xp-list-title" class="label">Archivio · <span data-count>{items.length}</span> esperienze</h2>
+        <div class="filters" role="group" aria-label="Filtra per categoria" data-filters hidden>
+          <button type="button" aria-pressed="true" data-filter="">Tutte</button>
+          {categories.map((c) => <button type="button" aria-pressed="false" data-filter={c}>{c}</button>)}
+        </div>
+      </div>
+      <div data-xp-list>
+        <ExperienceList items={items} headingLevel="h3" />
+      </div>
+      <p class="visually-hidden" aria-live="polite" data-status></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-xp-list] .xp-row')];
+  const count = document.querySelector('[data-count]');
+  const status = document.querySelector('[data-status]');
+  if (bar) {
+    bar.hidden = false;
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>('button')];
+    buttons.forEach((btn) =>
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.filter ?? '';
+        buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        let n = 0;
+        rows.forEach((row) => {
+          const cat = row.querySelector('.xp-row__cat')?.textContent?.trim() ?? '';
+          const show = !f || cat === f;
+          row.hidden = !show;
+          if (show) { n++; row.classList.add('is-visible'); }
+        });
+        if (count) count.textContent = String(n);
+        if (status) status.textContent = `${n} ${n === 1 ? 'esperienza visualizzata' : 'esperienze visualizzate'}${f ? ` nella categoria ${f}` : ''}.`;
+      }),
+    );
+  }
+</script>
+
+<style>
+  .hero-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-top: var(--sp-6); font-size: var(--fs-xs); color: var(--fg-muted); }
+  .xp { padding-top: 0; }
+  .xp__bar { display: grid; gap: var(--sp-4); margin-bottom: var(--sp-6); }
+  .xp__bar h2 { color: var(--c-bordeaux); font-family: var(--font-sans); }
+  .filters { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .filters[hidden] { display: none; }
+  .filters button {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--c-linea);
+    border-radius: 999px;
+    background: transparent;
+    font-size: var(--fs-sm);
+    transition: background-color var(--dur), color var(--dur), border-color var(--dur);
+  }
+  .filters button:hover { border-color: var(--c-vite); }
+  .filters button[aria-pressed='true'] { background: var(--c-vite); border-color: var(--c-vite); color: var(--c-avorio); }
+  @media (min-width: 64rem) { .xp__bar { grid-template-columns: auto 1fr; align-items: center; } .filters { justify-content: flex-end; } }
+</style>

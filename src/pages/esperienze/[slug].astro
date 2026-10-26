@@ -1,0 +1,146 @@
+---
+/**
+ * SCHEDA ESPERIENZA — generata da ogni file in src/content/esperienze/.
+ * Contiene: titolo, data, descrizione, competenze, immagini e documenti.
+ */
+import { getCollection, getEntries, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Visual from '@/components/Visual.astro';
+import Badge from '@/components/Badge.astro';
+import DocumentList from '@/components/DocumentList.astro';
+import { url, formatPeriod } from '@/utils/url';
+
+export async function getStaticPaths() {
+  const all = (await getCollection('esperienze')).sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf());
+  return all.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, prev: all[i - 1], next: all[i + 1] },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'esperienze'>;
+  prev?: CollectionEntry<'esperienze'>;
+  next?: CollectionEntry<'esperienze'>;
+}
+
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const docs = d.documents.length ? await getEntries(d.documents) : [];
+const [lead, ...more] = d.visuals;
+---
+
+<BaseLayout title={d.title} description={d.summary} type="article">
+  <article class="xp">
+    <header class="container xp__head">
+      <nav class="crumbs label" aria-label="Percorso di navigazione">
+        <a href={url('esperienze/')}>Esperienze</a> <span aria-hidden="true">/</span> <span aria-current="page">{d.category}</span>
+      </nav>
+      <h1 data-reveal>{d.title}</h1>
+      <p class="lead xp__summary" data-reveal style="--reveal-i:1">{d.summary}</p>
+      <dl class="xp__meta" data-reveal style="--reveal-i:2">
+        <div><dt class="label">Periodo</dt><dd>{formatPeriod(d.start, d.end)}</dd></div>
+        <div><dt class="label">Luogo</dt><dd>{d.place}</dd></div>
+        <div><dt class="label">Categoria</dt><dd>{d.category}</dd></div>
+        {d.hours && <div><dt class="label">Impegno</dt><dd>circa {d.hours} ore</dd></div>}
+      </dl>
+    </header>
+
+    <div class="container xp__lead-visual" data-reveal>
+      <Visual {...lead} ratio="21 / 9" priority sizes="100vw" />
+    </div>
+
+    <div class="container grid xp__body">
+      <div class="prose xp__content lg:span-7">
+        <Content />
+      </div>
+
+      <aside class="xp__aside lg:span-4 lg:start-9">
+        <section aria-labelledby="skills-h">
+          <h2 id="skills-h" class="label">Competenze sviluppate</h2>
+          <ul class="skills" role="list">{d.skills.map((s) => <li>{s}</li>)}</ul>
+        </section>
+
+        <section aria-labelledby="docs-h">
+          <h2 id="docs-h" class="label">Documenti associati</h2>
+          {docs.length ? (
+            <DocumentList items={docs} compact />
+          ) : (
+            <p class="empty">Nessun documento collegato a questa esperienza. Puoi aggiungerne nel campo <code>documents</code> del file Markdown.</p>
+          )}
+        </section>
+
+        {d.demo && <p><Badge type="dimostrativo" /></p>}
+      </aside>
+    </div>
+
+    {more.length > 0 && (
+      <section class="container xp__gallery" aria-label="Altre immagini">
+        {more.map((v) => <div data-reveal><Visual {...v} ratio="3 / 2" sizes="(min-width: 64rem) 50vw, 100vw" /></div>)}
+      </section>
+    )}
+
+    <nav class="container pager" aria-label="Altre esperienze">
+      {prev ? (
+        <a class="pager__link" href={url(`esperienze/${prev.id}/`)} rel="prev">
+          <span class="label">← Più recente</span><span class="pager__title">{prev.data.title}</span>
+        </a>
+      ) : <span></span>}
+      {next && (
+        <a class="pager__link pager__link--next" href={url(`esperienze/${next.id}/`)} rel="next">
+          <span class="label">Meno recente →</span><span class="pager__title">{next.data.title}</span>
+        </a>
+      )}
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .xp__head { padding-block: clamp(2rem, 1.5rem + 3vw, 5rem) var(--sp-7); }
+  .crumbs { display: flex; gap: var(--sp-2); color: var(--c-muted); margin-bottom: var(--sp-5); }
+  .crumbs a { color: var(--c-bordeaux); text-decoration: none; }
+  .crumbs a:hover { text-decoration: underline; }
+  .xp__head h1 { font-size: var(--fs-h1); max-width: 18ch; }
+  .xp__summary { margin-top: var(--sp-5); max-width: 46ch; }
+  .xp__meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--sp-4) var(--col-gap); margin-top: var(--sp-7); border-top: 1px solid var(--c-vite); padding-top: var(--sp-4); }
+  .xp__meta dt { color: var(--c-muted); margin-bottom: 0.2rem; }
+  .xp__meta dd { font-size: var(--fs-sm); }
+
+  .xp__body { padding-block: var(--sp-8) var(--section); }
+  .xp__content { font-size: var(--fs-base); }
+  .xp__content :global(h2) { font-size: var(--fs-h3); }
+  .xp__content :global(h2:first-child) { margin-top: 0; }
+  .xp__content :global(blockquote) {
+    margin: var(--sp-6) 0;
+    padding-left: var(--sp-5);
+    border-left: 2px solid var(--c-bordeaux);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: var(--fs-h4);
+    line-height: 1.4;
+    color: var(--c-vite);
+  }
+
+  .xp__aside { display: grid; gap: var(--sp-7); align-content: start; }
+  .xp__aside h2 { color: var(--c-bordeaux); font-family: var(--font-sans); margin-bottom: var(--sp-4); }
+  @media (min-width: 64rem) { .xp__aside { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; } }
+  .skills { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .skills li { padding: 0.35em 0.9em; border: 1px solid var(--c-vite); border-radius: 999px; font-size: var(--fs-sm); color: var(--c-vite); }
+  .empty { font-size: var(--fs-sm); color: var(--fg-muted); padding: var(--sp-4); border: 1px dashed var(--c-linea); }
+  code { font-size: 0.9em; padding: 0.1em 0.35em; background: var(--c-carta); }
+
+  .xp__gallery { display: grid; gap: var(--col-gap); padding-bottom: var(--section); }
+  @media (min-width: 48rem) { .xp__gallery { grid-template-columns: 1fr 1fr; } }
+
+  .pager { display: grid; gap: var(--sp-4); padding-bottom: var(--section); }
+  .pager__link { display: grid; gap: var(--sp-2); padding: var(--sp-5) 0; border-top: 1px solid var(--c-vite); text-decoration: none; }
+  .pager__link .label { color: var(--c-bordeaux); }
+  .pager__title { font-family: var(--font-serif); font-size: var(--fs-h4); color: var(--c-vite); transition: color var(--dur-fast); }
+  .pager__link:hover .pager__title { color: var(--c-bordeaux); font-style: italic; }
+  @media (min-width: 48rem) {
+    .pager { grid-template-columns: 1fr 1fr; column-gap: var(--col-gap); }
+    .pager__link--next { text-align: right; }
+  }
+</style>

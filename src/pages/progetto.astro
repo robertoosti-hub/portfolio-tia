@@ -1,0 +1,338 @@
+---
+/**
+ * AZIENDA E PROGETTO FUTURO
+ * La pagina si adatta a company.mode (src/data/company.ts):
+ *  'famiglia' / 'riferimento' → mostra azienda + progetto
+ *  'progetto'                  → mostra solo il progetto
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import Visual from '@/components/Visual.astro';
+import Badge from '@/components/Badge.astro';
+import { company, project } from '@/data/company';
+import { url } from '@/utils/url';
+
+const showCompany = company.mode !== 'progetto';
+const companyLabel = company.mode === 'famiglia' ? 'Azienda di famiglia' : 'Azienda di riferimento';
+---
+
+<BaseLayout
+  title="Azienda e progetto futuro"
+  description="Maso Larici, azienda vitivinicola familiare simulata in Val di Cembra, e “Terrazze vive”: il progetto di recupero dei terrazzamenti con varietà resistenti. Caso didattico."
+>
+  {showCompany ? (
+    <PageHero index="02" eyebrow={`${companyLabel} · caso didattico`} lead={company.claim} visual={company.hero}>
+      <Fragment slot="title">{company.name}, <em>dove tutto comincia</em></Fragment>
+      <p class="hero-note" data-reveal style="--reveal-i:3">
+        <Badge type="dimostrativo" /> {company.name} è un’azienda di fantasia: superfici, varietà e numeri sono simulati.
+      </p>
+    </PageHero>
+  ) : (
+    <PageHero index="02" eyebrow="Progetto futuro" lead={project.summary} visual={project.visual}>
+      <Fragment slot="title">Terrazze <em>vive</em></Fragment>
+    </PageHero>
+  )}
+
+  {showCompany && (
+    <>
+      <!-- DATI IN EVIDENZA -->
+      <section class="facts-wrap" aria-label="L’azienda in cifre">
+        <div class="container">
+          <dl class="facts">
+            {company.facts.map((f, i) => (
+              <div class="fact" data-reveal style={`--reveal-i:${i}`}>
+                <dt class="label">{f.label}</dt>
+                <dd><span class="numeral">{f.value}</span>{f.unit && <span class="fact__unit">{f.unit}</span>}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <!-- TERRITORIO -->
+      <section class="section" aria-labelledby="terr-title">
+        <div class="container grid terr">
+          <div class="lg:span-6 terr__media" data-reveal>
+            <Visual scene="valle" seed={7} photo="territorio" alt="Illustrazione della valle con creste montuose e colline vitate, punto di vista dal versante." ratio="5 / 4" caption="Val di Cembra, versante esposto a sud-ovest" />
+          </div>
+          <div class="lg:span-5 lg:start-8">
+            <SectionHead index="01" label={company.territory.title} id="terr-title" align="stack">Pendenze, <em>porfido</em> e muretti a secco</SectionHead>
+            <div class="prose">
+              {company.territory.text.map((t) => <p data-reveal>{t}</p>)}
+            </div>
+            <p class="small-note muted" data-reveal>{company.territory.note}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- AZIENDA -->
+      <section class="section section--carta" aria-labelledby="az-title">
+        <div class="container">
+          <SectionHead index="02" label={company.profile.title} id="az-title">Una piccola azienda, <em>tante mani</em></SectionHead>
+          <dl class="rows">
+            {company.profile.rows.map((r, i) => (
+              <div class="row" data-reveal style={`--reveal-i:${i % 3}`}>
+                <dt class="label">{r.term}</dt>
+                <dd>{r.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <!-- APPROCCIO PRODUTTIVO -->
+      <section class="section" aria-labelledby="ap-title">
+        <div class="container">
+          <SectionHead index="03" label={company.approach.title} id="ap-title">Produrre <em>con misura</em></SectionHead>
+          <ol class="approach" role="list">
+            {company.approach.items.map((a, i) => (
+              <li data-reveal style={`--reveal-i:${i % 2}`}>
+                <span class="approach__num numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{a.title}</h3>
+                <p>{a.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <!-- FILOSOFIA -->
+      <section class="section section--bordeaux philo" aria-labelledby="philo-title">
+        <div class="container">
+          <h2 id="philo-title" class="label">04 · Filosofia</h2>
+          <figure class="philo__fig" data-reveal>
+            <blockquote><p>{company.philosophy.quote}</p></blockquote>
+            <figcaption class="label">— {company.philosophy.author}</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- GALLERIA -->
+      <section class="section" aria-labelledby="gal-title">
+        <div class="container">
+          <SectionHead index="05" label="Galleria" id="gal-title" intro="Ogni immagine è uno spazio per una fotografia dell’azienda, con didascalia: dove, quando, che cosa si vede.">
+            L’azienda <em>per immagini</em>
+          </SectionHead>
+          <ul class="gallery" role="list">
+            {company.gallery.map((g, i) => (
+              <li class={`gallery__item gallery__item--${i + 1}`} data-reveal style={`--reveal-i:${i % 3}`}>
+                <Visual {...g} sizes="(min-width: 64rem) 40vw, 100vw" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </>
+  )}
+
+  <!-- PROGETTO FUTURO -->
+  <section id="progetto" class="section section--vite project" aria-labelledby="pr-title">
+    <div class="container">
+      <div class="grid project__intro">
+        <div class="lg:span-7">
+          <p class="label project__kicker" data-reveal>{project.kicker}</p>
+          <h2 id="pr-title" class="project__title" data-reveal style="--reveal-i:1">Terrazze <em>vive</em></h2>
+          <p class="lead project__lead" data-reveal style="--reveal-i:2">{project.summary}</p>
+        </div>
+        <div class="lg:span-4 lg:start-9 project__why" data-reveal style="--reveal-i:3">
+          <h3 class="label">Da dove nasce</h3>
+          <ul role="list">{project.why.map((w) => <li>{w}</li>)}</ul>
+        </div>
+      </div>
+
+      <h3 class="block-title" data-reveal>Obiettivi</h3>
+      <ol class="objectives" role="list">
+        {project.objectives.map((o, i) => (
+          <li data-reveal style={`--reveal-i:${i}`}>
+            <span class="numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h4>{o.title}</h4>
+            <p>{o.text}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div class="grid project__cols">
+        <div class="lg:span-6">
+          <h3 class="block-title" data-reveal>Sostenibilità</h3>
+          <dl class="pillars">
+            {project.sustainability.map((s) => (
+              <div data-reveal><dt>{s.area}</dt><dd>{s.text}</dd></div>
+            ))}
+          </dl>
+        </div>
+        <div class="lg:span-5 lg:start-8">
+          <h3 class="block-title" data-reveal>Innovazione</h3>
+          <ul class="innov" role="list">
+            {project.innovation.map((n) => (
+              <li data-reveal><h4>{n.title}</h4><p>{n.text}</p></li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="block-title" data-reveal>Cronoprogramma ipotetico</h3>
+      <ol class="roadmap" role="list">
+        {project.timeline.map((t, i) => (
+          <li data-reveal style={`--reveal-i:${i}`}>
+            <span class="roadmap__year numeral">{t.year}</span>
+            <h4>{t.title}</h4>
+            <p>{t.text}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div class="grid project__end">
+        <div class="lg:span-6">
+          <h3 class="block-title" data-reveal>Possibili sviluppi</h3>
+          <ul class="dev" role="list">{project.developments.map((d) => <li data-reveal>{d}</li>)}</ul>
+        </div>
+        <aside class="caveat lg:span-5 lg:start-8" data-reveal aria-label="Avvertenza">
+          <p class="label">Da verificare</p>
+          <p>{project.caveat}</p>
+          <a class="btn btn--ghost" href={url('documenti/tesina/')}>Abstract della tesina <span class="arrow" aria-hidden="true">→</span></a>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTA DIDATTICA -->
+  <section class="section adapt" aria-labelledby="adapt-title">
+    <div class="container grid">
+      <div class="lg:span-4">
+        <p class="label adapt__label">Nota per gli studenti</p>
+        <h2 id="adapt-title" class="adapt__title">Non hai un’azienda <em>di famiglia?</em></h2>
+      </div>
+      <ol class="adapt__list lg:span-7 lg:start-6" role="list">
+        <li><h3>Azienda di riferimento</h3><p>Presenta l’azienda in cui hai svolto lo stage, con il suo consenso, e spiega che cosa hai osservato. Imposta <code>mode: 'riferimento'</code>.</p></li>
+        <li><h3>Solo progetto</h3><p>Parti dal progetto: un’idea di impresa costruita da zero, con territorio, mercato e fasi. Imposta <code>mode: 'progetto'</code> e la parte sull’azienda sparisce.</p></li>
+        <li><h3>Progetto in un’impresa esistente</h3><p>Proponi un’innovazione per un’azienda reale o cooperativa: un nuovo servizio, una tecnica, una linea di prodotto.</p></li>
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-top: var(--sp-6); font-size: var(--fs-xs); color: var(--fg-muted); max-width: 50ch; }
+  .small-note { font-size: var(--fs-xs); margin-top: var(--sp-5); max-width: 52ch; }
+
+  .facts-wrap { padding-bottom: var(--sp-8); }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--c-vite); }
+  .fact { display: flex; flex-direction: column-reverse; gap: var(--sp-2); padding: var(--sp-5) var(--sp-4) var(--sp-5) 0; border-bottom: 1px solid var(--c-linea); }
+  .fact dt { color: var(--fg-muted); }
+  .fact dd { font-size: var(--fs-h2); color: var(--c-vite); line-height: 1; }
+  .fact__unit { font-family: var(--font-serif); font-size: 0.45em; font-style: italic; margin-left: 0.2em; color: var(--c-bordeaux); }
+  @media (min-width: 64rem) { .facts { grid-template-columns: repeat(4, 1fr); } .fact { border-bottom: 0; } }
+
+  .terr { align-items: center; }
+
+  .rows { border-top: 1px solid var(--c-linea); }
+  .row { display: grid; gap: var(--sp-2); padding-block: var(--sp-5); border-bottom: 1px solid var(--c-linea); }
+  .row dt { color: var(--c-bordeaux); padding-top: 0.35rem; }
+  .row dd { font-family: var(--font-serif); font-size: var(--fs-h4); line-height: 1.35; color: var(--c-vite); max-width: 46ch; }
+  @media (min-width: 48rem) { .row { grid-template-columns: 3fr 9fr; column-gap: var(--col-gap); } }
+
+  .approach { display: grid; gap: var(--sp-7) var(--col-gap); }
+  .approach li { display: grid; gap: var(--sp-3); align-content: start; padding-top: var(--sp-4); border-top: 1px solid var(--c-linea); }
+  .approach__num { font-size: 1rem; color: var(--c-bordeaux); }
+  .approach h3 { font-size: var(--fs-h3); }
+  .approach p { max-width: 44ch; }
+  @media (min-width: 48rem) {
+    .approach { grid-template-columns: 1fr 1fr; }
+    .approach li:nth-child(even) { margin-top: var(--sp-8); }
+  }
+
+  .philo { padding-block: calc(var(--section) * 1.1); }
+  .philo .label { color: var(--accent); }
+  .philo__fig { margin-top: var(--sp-6); }
+  .philo blockquote p {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h1);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    max-width: 20ch;
+    text-wrap: balance;
+  }
+  .philo figcaption { margin-top: var(--sp-6); }
+
+  .gallery { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-6) var(--col-gap); }
+  .gallery__item :global(.visual__frame) { aspect-ratio: 4 / 3; }
+  @media (min-width: 48rem) {
+    .gallery { grid-template-columns: repeat(12, 1fr); }
+    .gallery__item--1 { grid-column: 1 / 8; }
+    .gallery__item--1 :global(.visual__frame) { aspect-ratio: 4 / 3; }
+    .gallery__item--2 { grid-column: 8 / 13; margin-top: var(--sp-9); }
+    .gallery__item--2 :global(.visual__frame) { aspect-ratio: 3 / 4; }
+    .gallery__item--3 { grid-column: 2 / 6; }
+    .gallery__item--3 :global(.visual__frame) { aspect-ratio: 4 / 5; }
+    .gallery__item--4 { grid-column: 6 / 13; margin-top: var(--sp-7); }
+    .gallery__item--4 :global(.visual__frame) { aspect-ratio: 3 / 2; }
+    .gallery__item--5 { grid-column: 1 / 13; }
+    .gallery__item--5 :global(.visual__frame) { aspect-ratio: 21 / 8; }
+  }
+
+  .project__kicker { color: var(--c-salvia); }
+  .project__title { font-size: var(--fs-display); font-weight: 300; line-height: 0.9; letter-spacing: -0.04em; margin-top: var(--sp-4); }
+  .project__lead { margin-top: var(--sp-6); max-width: 34ch; }
+  .project__why { align-self: end; }
+  .project__why h3 { color: var(--c-salvia); font-family: var(--font-sans); margin-bottom: var(--sp-4); }
+  .project__why li { padding-block: var(--sp-3); border-top: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); font-size: var(--fs-sm); }
+
+  .block-title {
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--c-salvia);
+    margin: var(--sp-9) 0 var(--sp-5);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent);
+  }
+
+  .objectives { display: grid; gap: var(--sp-6) var(--col-gap); }
+  .objectives li { display: grid; gap: var(--sp-2); align-content: start; }
+  .objectives .numeral { color: var(--c-salvia); }
+  .objectives h4 { font-size: var(--fs-h3); font-style: italic; font-weight: 300; }
+  .objectives p { font-size: var(--fs-sm); color: var(--c-avorio); }
+  @media (min-width: 48rem) { .objectives { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) { .objectives { grid-template-columns: repeat(4, 1fr); } }
+
+  .pillars > div { display: grid; gap: var(--sp-1); padding-block: var(--sp-4); border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); }
+  .pillars dt { font-family: var(--font-serif); font-size: var(--fs-h4); }
+  .pillars dd { color: var(--c-salvia); font-size: var(--fs-sm); }
+  .innov li { padding-block: var(--sp-4); border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); }
+  .innov h4 { font-size: var(--fs-h4); }
+  .innov p { color: var(--c-salvia); font-size: var(--fs-sm); margin-top: var(--sp-1); }
+
+  .roadmap { display: grid; gap: var(--sp-5); position: relative; }
+  .roadmap li { position: relative; display: grid; gap: var(--sp-2); padding-left: var(--sp-6); }
+  .roadmap li::before { content: ''; position: absolute; left: 0; top: 0.55rem; width: 10px; height: 10px; border-radius: 50%; background: var(--c-salvia); }
+  .roadmap li::after { content: ''; position: absolute; left: 4.5px; top: 1.4rem; bottom: calc(var(--sp-5) * -1); width: 1px; background: color-mix(in srgb, var(--c-avorio) 30%, transparent); }
+  .roadmap li:last-child::after { display: none; }
+  .roadmap__year { font-size: var(--fs-h4); color: var(--c-salvia); }
+  .roadmap h4 { font-size: var(--fs-h4); }
+  .roadmap p { font-size: var(--fs-sm); }
+  @media (min-width: 64rem) {
+    .roadmap { grid-template-columns: repeat(5, 1fr); column-gap: var(--col-gap); }
+    .roadmap li { padding-left: 0; padding-top: var(--sp-6); }
+    .roadmap li::before { top: 0; }
+    .roadmap li::after { left: 10px; right: calc(var(--col-gap) * -1); top: 4.5px; bottom: auto; width: auto; height: 1px; }
+  }
+
+  .project__end { margin-top: var(--sp-4); align-items: end; }
+  .dev li { padding-block: var(--sp-3); border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); }
+  .caveat { display: grid; gap: var(--sp-4); justify-items: start; padding: var(--sp-6); border: 1px dashed color-mix(in srgb, var(--c-avorio) 45%, transparent); font-size: var(--fs-sm); }
+  .caveat .label { color: var(--c-salvia); }
+
+  .adapt { padding-block: var(--sp-9); }
+  .adapt__label { color: var(--c-bordeaux); }
+  .adapt__title { font-size: var(--fs-h3); margin-top: var(--sp-3); }
+  .adapt__list { display: grid; gap: var(--sp-5); }
+  .adapt__list li { padding-left: var(--sp-5); border-left: 2px solid var(--c-salvia); }
+  .adapt__list h3 { font-size: var(--fs-h4); }
+  .adapt__list p { font-size: var(--fs-sm); color: var(--fg-muted); margin-top: var(--sp-1); }
+  code { font-size: 0.9em; padding: 0.1em 0.35em; background: var(--c-carta); border-radius: var(--radius); }
+</style>

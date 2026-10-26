@@ -1,0 +1,85 @@
+/* ==========================================================================
+   DESIGN TOKENS — "Coltivo competenze. Progetto il futuro."
+   Tutte le scelte visive del sito partono da qui: per personalizzare
+   il portfolio basta modificare questi valori.
+   ========================================================================== */
+
+:root {
+  /* --- Palette di base ---------------------------------------------------
+     Rapporti di contrasto (WCAG 2.2) verificati:
+     antracite / avorio   12.97:1  → testo corrente
+     verde / avorio        9.87:1  → titoli, link, fondi scuri
+     bordeaux / avorio     7.45:1  → accenti, link attivi
+     salvia / verde        5.19:1  → testo secondario SOLO su fondo verde
+     salvia / avorio       1.90:1  → MAI per il testo: solo decorazioni   */
+  --c-vite: #283f35;        /* Verde vite profondo */
+  --c-avorio: #f3efe5;      /* Avorio */
+  --c-bordeaux: #713d45;    /* Bordeaux */
+  --c-salvia: #a8b3a0;      /* Verde salvia */
+  --c-antracite: #262823;   /* Antracite */
+
+  /* Derivati (calcolati a mano, contrasto verificato) */
+  --c-carta: #e9e3d5;       /* avorio più profondo per le sezioni alternate */
+  --c-muted: #5b5f55;       /* testo secondario su avorio — 5.69:1 */
+  --c-linea: #cfc8b8;       /* filetti e bordi */
+  --c-vite-900: #1d2e27;    /* verde più scuro per footer e overlay */
+
+  /* Ruoli semantici: i componenti usano questi, non i colori diretti */
+  --bg: var(--c-avorio);
+  --fg: var(--c-antracite);
+  --fg-muted: var(--c-muted);
+  --accent: var(--c-bordeaux);
+  --heading: var(--c-vite);
+  --focus: var(--c-bordeaux);
+
+  /* --- Tipografia --------------------------------------------------------
+     Fraunces: serif editoriale "morbido", richiama l'etichetta di vino.
+     Instrument Sans: sans contemporanea, leggibile nei testi brevi.
+     Entrambe con licenza SIL Open Font License, ospitate localmente.  */
+  --font-serif: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', 'Segoe UI', system-ui, sans-serif;
+
+  /* Scala fluida: cresce con la larghezza dello schermo (mobile-first) */
+  --fs-xs: 0.8125rem;                                    /* 13px etichette */
+  --fs-sm: 0.9375rem;                                    /* 15px */
+  --fs-base: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem); /* 17–19px */
+  --fs-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --fs-h4: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --fs-h3: clamp(1.5rem, 1.3rem + 1vw, 2.125rem);
+  --fs-h2: clamp(2.125rem, 1.6rem + 2.6vw, 3.75rem);
+  --fs-h1: clamp(2.75rem, 1.8rem + 4.8vw, 6rem);
+  --fs-display: clamp(3.5rem, 1.6rem + 9.5vw, 10.5rem);
+
+  --lh-tight: 1.02;
+  --lh-snug: 1.2;
+  --lh-body: 1.6;
+  --tracking-label: 0.14em;
+
+  /* --- Spaziatura (scala 4/8) -------------------------------------------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+  --sp-10: 8rem;
+  --section: clamp(4.5rem, 3rem + 7vw, 10rem); /* respiro tra le sezioni */
+
+  /* --- Griglia ------------------------------------------------------------ */
+  --container: 88rem;
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 3rem);  /* margine laterale: 16px su mobile */
+  --col-gap: clamp(1rem, 0.6rem + 1.6vw, 2.5rem);
+  --measure: 62ch;                              /* lunghezza ideale delle righe */
+
+  /* --- Forme, movimento ------------------------------------------------- */
+  --radius: 2px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 180ms;
+  --dur: 420ms;
+  --dur-slow: 900ms;
+
+  --header-h: 4.5rem;
+}

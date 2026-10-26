@@ -1,0 +1,35 @@
+---
+/** Intestazione di sezione: numero, etichetta, titolo e testo introduttivo. */
+interface Props {
+  index?: string;
+  label: string;
+  id?: string;
+  intro?: string;
+  align?: 'split' | 'stack';
+}
+const { index, label, id, intro, align = 'split' } = Astro.props;
+---
+
+<header class:list={['section-head', `section-head--${align}`]}>
+  <p class="label section-head__label" data-reveal>
+    {index && <span class="numeral section-head__index">{index}</span>}
+    {label}
+  </p>
+  <div class="section-head__main">
+    <h2 id={id} data-reveal style="--reveal-i:1"><slot /></h2>
+    {intro && <p class="section-head__intro muted" data-reveal style="--reveal-i:2">{intro}</p>}
+  </div>
+</header>
+
+<style>
+  .section-head { display: grid; gap: var(--sp-4); margin-bottom: clamp(2.5rem, 2rem + 3vw, 5rem); }
+  .section-head__label { display: flex; gap: var(--sp-3); align-items: baseline; color: var(--accent); }
+  .section-head__index { font-size: 1rem; letter-spacing: 0; color: var(--heading); }
+  .section-head h2 { max-width: 18ch; }
+  .section-head__intro { margin-top: var(--sp-5); max-width: 52ch; }
+
+  @media (min-width: 64rem) {
+    .section-head--split { grid-template-columns: 3fr 9fr; column-gap: var(--col-gap); }
+    .section-head--split .section-head__label { padding-top: 0.9rem; }
+  }
+</style>

@@ -1,0 +1,437 @@
+---
+/**
+ * ARTWORK — illustrazioni generative originali in SVG.
+ *
+ * Servono da segnaposto "art-directed" finché non vengono inserite
+ * fotografie reali (vedi componente Visual.astro e README).
+ * Ogni scena è calcolata in fase di build a partire da un "seme":
+ * cambiando il seme si ottiene una variante della stessa scena.
+ *
+ * Scene disponibili:
+ *  valle · filari · terrazze · grappolo · potatura · monitoraggio
+ *  ritratto · suolo · montagna
+ */
+import type { Scene } from '@/data/types';
+import { rng, ridge, hill, curvePath, blob, LEAF_PATH, round as r1 } from '@/utils/art';
+
+
+interface Props {
+  scene: Scene;
+  seed?: number;
+  /** Variante chiara per le scene che la prevedono (grappolo) */
+  tone?: 'scuro' | 'chiaro';
+  /** Sovrappone un mirino fotografico (usato nella sezione Fotografia) */
+  viewfinder?: boolean;
+  /** Testo alternativo. Se assente l'illustrazione è decorativa. */
+  alt?: string;
+  class?: string;
+}
+
+const { scene, seed = 1, tone = 'scuro', viewfinder = false, alt, class: className } = Astro.props;
+const rand = rng(seed * 7919 + scene.length * 31);
+const id = `art-${scene}-${seed}-${Math.floor(rand() * 1e6)}`;
+const W = 1200, H = 800;
+
+/* ---- Dati precalcolati per ciascuna scena ---------------------------- */
+
+// VALLE: Valle dell'Adige con creste dolomitiche e colline vitate
+const valle = (() => {
+  const far = ridge(rand, { y: 300, amp: 200 });
+  const mid = ridge(rand, { y: 420, amp: 130, rough: 0.5 });
+  const h1 = hill(560, 38, 900, 18, 320, rand() * 3);
+  const h2 = hill(690, 30, 1300, 14, 420, rand() * 3);
+  const rows1 = Array.from({ length: 16 }, (_, i) => ({
+    d: curvePath((x) => h1(x) + 10 + i * 9 + i * i * 0.7, { closed: false }),
+    w: 1.2 + i * 0.12,
+  }));
+  const rows2 = Array.from({ length: 11 }, (_, i) => ({
+    d: curvePath((x) => h2(x) + 12 + i * 13 + i * i * 1.3, { closed: false }),
+    w: 3 + i * 0.5,
+    dash: `${r1(2 + i * 0.9)} ${r1(5 + i * 1.2)}`,
+  }));
+  const towerX = 260 + rand() * 120;
+  return { far, mid, h1: curvePath(h1), h2: curvePath(h2), rows1, rows2, towerX, towerY: h1(towerX) };
+})();
+
+// FILARI: prospettiva centrale dei filari verso l'orizzonte
+const filari = (() => {
+  const horizon = 340;
+  const vp = 600 + (rand() - 0.5) * 220;
+  const far = ridge(rand, { y: 250, amp: 140 });
+  const mid = ridge(rand, { y: 315, amp: 70, rough: 0.5 });
+  const rows = Array.from({ length: 25 }, (_, k) => {
+    const bx = 600 + (k - 12) * 120;
+    const half = 26;
+    return `M${r1(vp)} ${horizon}L${r1(bx - half)} ${H}L${r1(bx + half)} ${H}Z`;
+  });
+  const posts: { x: number; y: number; h: number }[] = [];
+  for (let k = 0; k < 25; k++) {
+    const bx = 600 + (k - 12) * 120;
+    for (let j = 1; j <= 7; j++) {
+      const t = (j / 7) ** 2.2;
+      posts.push({ x: vp + (bx - vp) * t, y: horizon + (H - horizon) * t, h: 4 + 70 * t });
+    }
+  }
+  return { horizon, far, mid, rows, posts };
+})();
+
+// TERRAZZE: terrazzamenti con muretti a secco (Val di Cembra)
+const terrazze = (() => {
+  const top = ridge(rand, { y: 170, amp: 140 });
+  const bands = [];
+  let y = 230;
+  for (let i = 0; i < 11; i++) {
+    const hgt = 26 + i * 9;
+    const ph = rand() * 6;
+    const amp = 6 + i * 1.5;
+    const edge = (x: number) => y + amp * Math.sin(x / 260 + ph);
+    const wall = 5 + i * 1.6;
+    bands.push({
+      field: curvePath(edge),
+      wall: curvePath((x) => edge(x) + hgt - wall),
+      vines: curvePath((x) => edge(x) + hgt * 0.42, { closed: false }),
+      stones: curvePath((x) => edge(x) + hgt - wall / 2, { closed: false }),
+      wallW: wall,
+      vineW: 2 + i * 0.45,
+      dash: `${r1(1.5 + i * 0.6)} ${r1(6 + i * 1.4)}`,
+      fill: i % 2 ? '#3b5446' : '#4a6455',
+    });
+    y += hgt;
+  }
+  return { top, bands };
+})();
+
+// GRAPPOLO: grappolo e foglia
+const grappolo = (() => {
+  const berries: { x: number; y: number; r: number }[] = [];
+  const cx = 740, top = 230;
+  for (let j = 0; j < 10; j++) {
+    const n = Math.max(1, Math.round(7 - j * 0.68));
+    for (let i = 0; i < n; i++) {
+      berries.push({
+        x: cx + (i - (n - 1) / 2) * 58 + (rand() - 0.5) * 14 + j * 6,
+        y: top + j * 50 + (rand() - 0.5) * 10,
+        r: 30 + rand() * 6,
+      });
+    }
+  }
+  berries.sort((a, b) => a.y - b.y);
+  return { berries, cx, top };
+})();
+
+// MONITORAGGIO: mappa a isoipse con stazioni di rilevamento
+const monitoraggio = (() => {
+  const c1 = { x: 420 + rand() * 80, y: 380 };
+  const c2 = { x: 860 + rand() * 60, y: 300 };
+  const lines = [
+    ...Array.from({ length: 13 }, (_, k) => ({ d: blob(rand, c1.x, c1.y, 22 + k * 30, 0.16), strong: k % 4 === 3 })),
+    ...Array.from({ length: 8 }, (_, k) => ({ d: blob(rand, c2.x, c2.y, 18 + k * 26, 0.2), strong: k % 4 === 3 })),
+  ];
+  const stations = Array.from({ length: 5 }, (_, i) => ({
+    x: 180 + i * 210 + rand() * 60,
+    y: 180 + rand() * 440,
+    alert: i === 2,
+  }));
+  return { lines, stations };
+})();
+
+// SUOLO: profilo pedologico con orizzonti e radici
+const suolo = (() => {
+  const layers = [
+    { y: 260, c: '#4b3a36', name: 'A' },
+    { y: 400, c: '#6d5a50', name: 'B' },
+    { y: 560, c: '#9a8b78', name: 'C' },
+    { y: 690, c: '#c2b59f', name: 'R' },
+  ].map((l, i) => ({ ...l, d: curvePath((x) => l.y + 12 * Math.sin(x / 140 + i * 2 + rand())) }));
+  const stones = Array.from({ length: 70 }, () => {
+    const y = 420 + rand() * 380;
+    return { x: rand() * W, y, rx: 6 + rand() * (y > 680 ? 34 : 18), ry: 4 + rand() * 12, a: rand() * 180 };
+  });
+  const roots: string[] = [];
+  for (let k = 0; k < 6; k++) {
+    let x = 160 + k * 180 + rand() * 40, y = 250;
+    let d = `M${r1(x)} ${y}`;
+    for (let s = 0; s < 9; s++) {
+      x += (rand() - 0.5) * 60;
+      y += 30 + rand() * 30;
+      d += `L${r1(x)} ${r1(y)}`;
+    }
+    roots.push(d);
+  }
+  const vines = Array.from({ length: 9 }, (_, i) => 120 + i * 120);
+  return { layers, stones, roots, vines };
+})();
+
+// MONTAGNA: alba sulle creste e sentiero
+const montagna = (() => {
+  const l1 = ridge(rand, { y: 330, amp: 220 });
+  const l2 = ridge(rand, { y: 440, amp: 160 });
+  const l3 = ridge(rand, { y: 560, amp: 120, rough: 0.5 });
+  const l4 = ridge(rand, { y: 690, amp: 60, rough: 0.45 });
+  let x = 220, y = 760;
+  let trail = `M${x} ${y}`;
+  for (let i = 0; i < 9; i++) {
+    x += (i % 2 ? -1 : 1) * (90 + rand() * 80) + 30;
+    y -= 40 + rand() * 18;
+    trail += `L${r1(x)} ${r1(y)}`;
+  }
+  return { l1, l2, l3, l4, trail, summit: { x, y } };
+})();
+
+// Punti sul capo a frutto (curva di Bézier) per le gemme nella tavola di potatura
+const bez = (t: number, p: number[]) =>
+  (1 - t) ** 3 * p[0] + 3 * (1 - t) ** 2 * t * p[1] + 3 * (1 - t) * t ** 2 * p[2] + t ** 3 * p[3];
+const buds = Array.from({ length: 9 }, (_, i) => {
+  const t = 0.12 + i * 0.1;
+  return { x: bez(t, [600, 700, 880, 1010]), y: bez(t, [392, 330, 330, 420]) };
+});
+
+const a11y = alt ? { role: 'img' as const, 'aria-label': alt } : { 'aria-hidden': 'true' as const };
+---
+
+<svg
+  class:list={['artwork', className]}
+  viewBox={`0 0 ${W} ${H}`}
+  preserveAspectRatio="xMidYMid slice"
+  xmlns="http://www.w3.org/2000/svg"
+  focusable="false"
+  {...a11y}
+>
+  <defs>
+    <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3dccb" />
+      <stop offset="0.7" stop-color="#f3efe5" />
+    </linearGradient>
+    <linearGradient id={`${id}-dawn`} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a2f37" />
+      <stop offset="0.45" stop-color="#9c6466" />
+      <stop offset="0.85" stop-color="#e6cdbf" />
+    </linearGradient>
+    <linearGradient id={`${id}-ground`} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6f8673" />
+      <stop offset="1" stop-color="#3b5446" />
+    </linearGradient>
+    <radialGradient id={`${id}-berry`} cx="0.35" cy="0.3" r="0.75">
+      <stop offset="0" stop-color="#9a6670" />
+      <stop offset="0.55" stop-color="#713d45" />
+      <stop offset="1" stop-color="#3e1f25" />
+    </radialGradient>
+  </defs>
+
+  {scene === 'valle' && (
+    <g>
+      <rect width={W} height={H} fill={`url(#${id}-sky)`} />
+      <circle cx="880" cy="230" r="86" fill="#e6cdbf" />
+      <path d={valle.far} fill="#cdd3c6" />
+      <path d={valle.mid} fill="#a8b3a0" />
+      <clipPath id={`${id}-h1`}><path d={valle.h1} /></clipPath>
+      <path d={valle.h1} fill="#4f6a59" />
+      <g clip-path={`url(#${id}-h1)`} fill="none" stroke="#3b5446">
+        {valle.rows1.map((row) => <path d={row.d} stroke-width={row.w} />)}
+      </g>
+      <g fill="#283f35" transform={`translate(${r1(valle.towerX)} ${r1(valle.towerY)})`}>
+        <rect x="-7" y="-58" width="14" height="60" />
+        <path d="M-9 -58L0 -84L9 -58Z" />
+        <rect x="-30" y="-22" width="26" height="24" />
+      </g>
+      <clipPath id={`${id}-h2`}><path d={valle.h2} /></clipPath>
+      <path d={valle.h2} fill="#283f35" />
+      <g clip-path={`url(#${id}-h2)`} fill="none" stroke="#1d2e27" stroke-linecap="round">
+        {valle.rows2.map((row) => <path d={row.d} stroke-width={row.w} stroke-dasharray={row.dash} />)}
+      </g>
+    </g>
+  )}
+
+  {scene === 'filari' && (
+    <g>
+      <rect width={W} height={H} fill={`url(#${id}-sky)`} />
+      <circle cx="300" cy="200" r="60" fill="#e6cdbf" />
+      <path d={filari.far} fill="#cdd3c6" />
+      <path d={filari.mid} fill="#a8b3a0" />
+      <rect y={filari.horizon} width={W} height={H - filari.horizon} fill={`url(#${id}-ground)`} />
+      <g fill="#283f35">{filari.rows.map((d) => <path d={d} />)}</g>
+      <g fill="#1d2e27">
+        {filari.posts.map((p) => (
+          <rect x={r1(p.x - p.h * 0.05)} y={r1(p.y - p.h)} width={r1(Math.max(1, p.h * 0.1))} height={r1(p.h)} />
+        ))}
+      </g>
+    </g>
+  )}
+
+  {scene === 'terrazze' && (
+    <g>
+      <rect width={W} height={H} fill={`url(#${id}-sky)`} />
+      <path d={terrazze.top} fill="#a8b3a0" />
+      {terrazze.bands.map((b) => (
+        <g>
+          <path d={b.field} fill={b.fill} />
+          <path d={b.vines} fill="none" stroke="#1d2e27" stroke-width={b.vineW} stroke-dasharray={b.dash} stroke-linecap="round" />
+          <path d={b.wall} fill="#5b5f55" />
+          <path d={b.stones} fill="none" stroke="#a39d8e" stroke-width={b.wallW * 0.5} stroke-dasharray="7 4 12 5" />
+        </g>
+      ))}
+    </g>
+  )}
+
+  {scene === 'grappolo' && (
+    <g>
+      <rect width={W} height={H} fill={tone === 'chiaro' ? '#e9e3d5' : '#283f35'} />
+      <g transform="translate(400 360) rotate(-18) scale(2.5)">
+        <path d={LEAF_PATH} fill={tone === 'chiaro' ? '#a8b3a0' : '#3b5446'} />
+        <g fill="none" stroke={tone === 'chiaro' ? '#5e6b58' : '#a8b3a0'} stroke-width="1" opacity="0.7">
+          <path d="M0 110L0 -150M0 40L-118 26M0 40L118 26M0 10L-120 -80M0 10L120 -80" />
+        </g>
+      </g>
+      <path
+        d={`M${grappolo.cx} ${grappolo.top - 20}C${grappolo.cx - 10} 150 ${grappolo.cx + 30} 110 ${grappolo.cx + 80} 70`}
+        fill="none" stroke={tone === 'chiaro' ? '#5e6b58' : '#a8b3a0'} stroke-width="7" stroke-linecap="round"
+      />
+      <path
+        d={`M${grappolo.cx + 60} 90c40-20 70 10 50 40s-50 10-30-15`}
+        fill="none" stroke={tone === 'chiaro' ? '#5e6b58' : '#a8b3a0'} stroke-width="3" stroke-linecap="round"
+      />
+      {grappolo.berries.map((b) => (
+        <g>
+          <circle cx={r1(b.x)} cy={r1(b.y)} r={r1(b.r)} fill={`url(#${id}-berry)`} />
+          <circle cx={r1(b.x - b.r * 0.35)} cy={r1(b.y - b.r * 0.38)} r={r1(b.r * 0.16)} fill="#f3efe5" opacity="0.4" />
+        </g>
+      ))}
+    </g>
+  )}
+
+  {scene === 'potatura' && (
+    <g style="font-family:var(--font-sans)">
+      <rect width={W} height={H} fill="#f3efe5" />
+      <g stroke="#e1dacb" stroke-width="1">
+        {Array.from({ length: 30 }, (_, i) => <line x1={i * 40} y1="0" x2={i * 40} y2={H} />)}
+        {Array.from({ length: 20 }, (_, i) => <line x1="0" y1={i * 40} x2={W} y2={i * 40} />)}
+      </g>
+      <text x="60" y="80" style="font-family:var(--font-serif)" font-style="italic" font-size="30" fill="#283f35">Tav. 3 — Potatura a Guyot</text>
+      <line x1="60" y1="100" x2="420" y2="100" stroke="#283f35" />
+      <line x1="140" y1="420" x2="1100" y2="420" stroke="#5b5f55" stroke-width="2" />
+      <rect x="132" y="300" width="14" height="420" fill="#5b5f55" />
+      <rect x="1096" y="300" width="14" height="420" fill="#5b5f55" />
+      <line x1="40" y1="720" x2="1160" y2="720" stroke="#262823" stroke-width="2" />
+      <path d="M598 720C590 640 612 560 596 480C590 440 604 410 600 392" fill="none" stroke="#262823" stroke-width="18" stroke-linecap="round" />
+      <path d="M600 382C520 300 380 290 240 360" fill="none" stroke="#713d45" stroke-width="5" stroke-dasharray="12 9" />
+      <g stroke="#713d45" stroke-width="4"><line x1="574" y1="352" x2="596" y2="374" /><line x1="596" y1="352" x2="574" y2="374" /></g>
+      <path d="M600 392C700 330 880 330 1010 420" fill="none" stroke="#283f35" stroke-width="8" stroke-linecap="round" />
+      <path d="M600 396C572 376 548 364 528 350" fill="none" stroke="#283f35" stroke-width="7" stroke-linecap="round" />
+      <g fill="#a8b3a0" stroke="#283f35" stroke-width="2">
+        {buds.map((b) => <ellipse cx={r1(b.x)} cy={r1(b.y - 8)} rx="6" ry="9" />)}
+        <ellipse cx="548" cy="356" rx="6" ry="9" /><ellipse cx="530" cy="340" rx="6" ry="9" />
+      </g>
+      <g font-size="20" letter-spacing="1.5" fill="#262823">
+        <line x1="860" y1="335" x2="900" y2="270" stroke="#262823" />
+        <text x="905" y="262">CAPO A FRUTTO</text>
+        <line x1="530" y1="340" x2="470" y2="280" stroke="#262823" />
+        <text x="300" y="272">SPERONE</text>
+        <text x="170" y="465" fill="#713d45">TAGLIO DI RITORNO</text>
+        <text x="900" y="455">FILO PORTANTE</text>
+        <text x="630" y="640">FUSTO</text>
+      </g>
+    </g>
+  )}
+
+  {scene === 'monitoraggio' && (
+    <g style="font-family:var(--font-sans)">
+      <rect width={W} height={H} fill="#283f35" />
+      <g stroke="#f3efe5" stroke-opacity="0.07">
+        {Array.from({ length: 13 }, (_, i) => <line x1={i * 100} y1="0" x2={i * 100} y2={H} />)}
+        {Array.from({ length: 9 }, (_, i) => <line x1="0" y1={i * 100} x2={W} y2={i * 100} />)}
+      </g>
+      <g fill="none" stroke="#a8b3a0">
+        {monitoraggio.lines.map((l) => <path d={l.d} stroke-width={l.strong ? 2 : 1} stroke-opacity={l.strong ? 0.75 : 0.35} />)}
+      </g>
+      {monitoraggio.stations.map((s, i) => (
+        <g transform={`translate(${r1(s.x)} ${r1(s.y)})`}>
+          <circle r="22" fill="none" stroke={s.alert ? '#e8c2c8' : '#a8b3a0'} stroke-width="2" stroke-dasharray={s.alert ? '4 4' : undefined} />
+          <circle r="7" fill={s.alert ? '#e8c2c8' : '#f3efe5'} />
+          <text x="32" y="6" font-size="20" letter-spacing="1" fill="#f3efe5">S{i + 1}</text>
+        </g>
+      ))}
+      <g transform="translate(60 740)" fill="#a8b3a0" font-size="16" letter-spacing="1">
+        <rect width="100" height="6" fill="#f3efe5" /><rect x="100" width="100" height="6" />
+        <text y="-12">0</text><text x="180" y="-12">200 m</text>
+      </g>
+    </g>
+  )}
+
+  {scene === 'ritratto' && (
+    <g>
+      <rect width={W} height={H} fill="#e9e3d5" />
+      <clipPath id={`${id}-arch`}><path d="M360 800V350A240 240 0 0 1 840 350V800Z" /></clipPath>
+      <path d="M360 800V350A240 240 0 0 1 840 350V800Z" fill="#a8b3a0" />
+      <g clip-path={`url(#${id}-arch)`}>
+        <g fill="none" stroke="#5e6b58" stroke-opacity="0.35">
+          {Array.from({ length: 20 }, (_, i) => <path d={`M300 ${120 + i * 36}Q600 ${90 + i * 36} 900 ${120 + i * 36}`} />)}
+        </g>
+        <path d="M600 560C730 560 820 610 850 800H350C380 610 470 560 600 560Z" fill="#283f35" />
+        <rect x="560" y="470" width="80" height="110" fill="#283f35" />
+        <ellipse cx="600" cy="400" rx="94" ry="116" fill="#283f35" />
+      </g>
+      <circle cx="840" cy="210" r="34" fill="#713d45" />
+    </g>
+  )}
+
+  {scene === 'suolo' && (
+    <g style="font-family:var(--font-sans)">
+      <rect width={W} height={H} fill="#f3efe5" />
+      {suolo.vines.map((x) => (
+        <g stroke="#283f35" stroke-width="5" stroke-linecap="round" fill="none">
+          <path d={`M${x} 250V170M${x} 175Q${x - 30} 150 ${x - 50} 160M${x} 175Q${x + 30} 150 ${x + 50} 160`} />
+          <circle cx={x - 22} cy="140" r="20" fill="#4f6a59" stroke="none" /><circle cx={x + 18} cy="132" r="24" fill="#3b5446" stroke="none" />
+        </g>
+      ))}
+      {suolo.layers.map((l) => <path d={l.d} fill={l.c} />)}
+      <g fill="#f3efe5" fill-opacity="0.22">
+        {suolo.stones.map((s) => <ellipse cx={r1(s.x)} cy={r1(s.y)} rx={r1(s.rx)} ry={r1(s.ry)} transform={`rotate(${r1(s.a)} ${r1(s.x)} ${r1(s.y)})`} />)}
+      </g>
+      <g fill="none" stroke="#f3efe5" stroke-opacity="0.45" stroke-width="2">{suolo.roots.map((d) => <path d={d} />)}</g>
+      <g font-size="22" letter-spacing="2" fill="#f3efe5">
+        {suolo.layers.map((l) => <text x="1110" y={l.y + 60}>{l.name}</text>)}
+      </g>
+      <g stroke="#f3efe5" stroke-width="2" fill="#f3efe5" font-size="15" letter-spacing="1">
+        <line x1="40" y1="262" x2="40" y2="780" />
+        {[0, 30, 60, 90, 120].map((cm, i) => (
+          <g><line x1="40" y1={262 + i * 125} x2="62" y2={262 + i * 125} /><text x="70" y={267 + i * 125} stroke="none">{cm} cm</text></g>
+        ))}
+      </g>
+    </g>
+  )}
+
+  {scene === 'montagna' && (
+    <g>
+      <rect width={W} height={H} fill={`url(#${id}-dawn)`} />
+      <circle cx="760" cy="300" r="70" fill="#f3efe5" opacity="0.85" />
+      <path d={montagna.l1} fill="#a8b3a0" opacity="0.85" />
+      <path d={montagna.l2} fill="#5e6b58" />
+      <path d={montagna.l3} fill="#283f35" />
+      <path d={montagna.l4} fill="#1d2e27" />
+      <path d={montagna.trail} fill="none" stroke="#f3efe5" stroke-width="4" stroke-dasharray="1 12" stroke-linecap="round" opacity="0.9" />
+      <g transform={`translate(${r1(montagna.summit.x)} ${r1(montagna.summit.y)})`} stroke="#f3efe5" stroke-width="4">
+        <line y1="0" y2="-40" /><line x1="-12" y1="-28" x2="12" y2="-28" />
+      </g>
+    </g>
+  )}
+
+  {viewfinder && (
+    <g fill="none" stroke="#f3efe5" stroke-width="2" style="font-family:var(--font-sans)">
+      <g stroke-opacity="0.45" stroke-width="1">
+        <line x1="400" y1="0" x2="400" y2={H} /><line x1="800" y1="0" x2="800" y2={H} />
+        <line x1="0" y1="266.7" x2={W} y2="266.7" /><line x1="0" y1="533.3" x2={W} y2="533.3" />
+      </g>
+      <path d="M60 110V60H110M1090 60H1140V110M1140 690V740H1090M110 740H60V690" stroke-width="3" />
+      <rect x="770" y="236" width="60" height="60" />
+      <text x="80" y="720" fill="#f3efe5" stroke="none" font-size="20" letter-spacing="2">ISO 200 · f/8 · 1/250</text>
+    </g>
+  )}
+</svg>
+
+<style>
+  .artwork {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>

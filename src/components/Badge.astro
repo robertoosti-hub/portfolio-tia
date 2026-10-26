@@ -1,0 +1,43 @@
+---
+/**
+ * BADGE DI PROVENIENZA — distingue a colpo d'occhio:
+ *  istituzionale  → dato verificato su fonte ufficiale
+ *  dimostrativo   → contenuto simulato
+ *  da-completare  → spazio da riempire con dati reali
+ */
+import type { Provenance } from '@/data/types';
+interface Props { type: Provenance; href?: string; }
+const { type, href } = Astro.props;
+const text = { istituzionale: 'Dato istituzionale', dimostrativo: 'Contenuto dimostrativo', 'da-completare': 'Da completare' }[type];
+---
+
+{href ? (
+  <a class:list={['badge', `badge--${type}`]} href={href} rel="external">
+    <span class="badge__dot" aria-hidden="true"></span>{text}<span class="visually-hidden"> – apri la fonte (sito esterno)</span> ↗
+  </a>
+) : (
+  <span class:list={['badge', `badge--${type}`]}><span class="badge__dot" aria-hidden="true"></span>{text}</span>
+)}
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.75em;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--fg-muted);
+  }
+  .badge__dot { width: 0.45em; height: 0.45em; border-radius: 50%; background: currentColor; }
+  .badge--istituzionale { color: var(--heading); }
+  .badge--dimostrativo .badge__dot { background: transparent; border: 1px solid currentColor; }
+  .badge--da-completare { color: var(--accent); border-style: dashed; }
+  a.badge:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+</style>

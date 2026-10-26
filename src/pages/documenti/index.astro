@@ -1,0 +1,55 @@
+---
+/**
+ * DOCUMENTI — archivio dei documenti professionali.
+ * Ogni documento dichiara il proprio stato: nessun link porta a file inesistenti.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import DocumentList from '@/components/DocumentList.astro';
+
+const all = (await getCollection('documenti')).sort((a, b) => a.data.order - b.data.order);
+const groups = [
+  { id: 'candidatura', label: 'Candidatura', title: 'CV e <em>lettera</em>', kinds: ['CV', 'Lettera'] },
+  { id: 'esame', label: 'Esame finale', title: 'Tesina e <em>colloquio</em>', kinds: ['Tesina', 'Presentazione', 'Elaborato'] },
+  { id: 'archivio', label: 'Archivio', title: 'Attestati e <em>relazioni</em>', kinds: ['Attestati', 'Relazioni'] },
+];
+---
+
+<BaseLayout
+  title="Documenti"
+  description="Curriculum vitae in italiano e inglese, lettera di presentazione, tesina, elaborato in inglese, attestati e relazioni dei moduli: l’archivio documentale del portfolio."
+>
+  <PageHero
+    index="06"
+    eyebrow="Documenti"
+    lead="Tutti i documenti professionali in un unico posto. Gli esempi dimostrativi si possono leggere, stampare o salvare in PDF; quelli non ancora disponibili lo dichiarano chiaramente."
+  >
+    <Fragment slot="title">L’archivio <em>professionale</em></Fragment>
+    <dl class="legend" data-reveal style="--reveal-i:3">
+      <div><dt><span class="dot dot--demo" aria-hidden="true"></span>Esempio dimostrativo</dt><dd>Documento completo ma simulato, consultabile come pagina.</dd></div>
+      <div><dt><span class="dot dot--empty" aria-hidden="true"></span>Da caricare</dt><dd>Spazio predisposto, con le istruzioni per completarlo.</dd></div>
+      <div><dt><span class="dot dot--pdf" aria-hidden="true"></span>PDF disponibile</dt><dd>File reale scaricabile.</dd></div>
+    </dl>
+  </PageHero>
+
+  {groups.map((g, i) => (
+    <section class:list={['section', { 'section--carta': i % 2 === 0 }]} aria-labelledby={`g-${g.id}`}>
+      <div class="container">
+        <SectionHead index={String(i + 1).padStart(2, '0')} label={g.label} id={`g-${g.id}`}><Fragment set:html={g.title} /></SectionHead>
+        <DocumentList items={all.filter((d) => g.kinds.includes(d.data.kind))} />
+      </div>
+    </section>
+  ))}
+</BaseLayout>
+
+<style>
+  .legend { display: grid; gap: var(--sp-4); margin-top: var(--sp-7); font-size: var(--fs-sm); max-width: 60rem; }
+  .legend dt { display: flex; align-items: center; gap: 0.5em; font-weight: 600; }
+  .legend dd { color: var(--fg-muted); font-size: var(--fs-xs); margin-top: 0.15rem; }
+  .dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--c-vite); }
+  .dot--empty { background: transparent; border: 1px dashed var(--c-bordeaux); }
+  .dot--pdf { background: var(--c-bordeaux); }
+  @media (min-width: 48rem) { .legend { grid-template-columns: repeat(3, 1fr); column-gap: var(--col-gap); } }
+</style>

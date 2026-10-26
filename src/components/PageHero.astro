@@ -1,0 +1,52 @@
+---
+/**
+ * PAGE HERO — apertura editoriale delle pagine interne.
+ * Titolo grande a sinistra, immagine asimmetrica a destra (opzionale).
+ * Lo slot "title" permette di usare <em> nel titolo.
+ */
+import Visual from './Visual.astro';
+import type { VisualData } from '@/data/types';
+
+interface Props {
+  index: string;      // es. "02"
+  eyebrow: string;    // es. "Chi sono"
+  lead?: string;
+  visual?: VisualData;
+}
+const { index, eyebrow, lead, visual } = Astro.props;
+---
+
+<section class:list={['page-hero', { 'page-hero--visual': visual }]}>
+  <div class="container page-hero__grid">
+    <div class="page-hero__text">
+      <p class="page-hero__eyebrow label" data-reveal>
+        <span class="page-hero__index numeral">{index}</span>
+        <span class="page-hero__line" aria-hidden="true"></span>
+        {eyebrow}
+      </p>
+      <h1 data-reveal style="--reveal-i:1"><slot name="title" /></h1>
+      {lead && <p class="lead page-hero__lead" data-reveal style="--reveal-i:2">{lead}</p>}
+      <slot />
+    </div>
+    {visual && (
+      <div class="page-hero__visual" data-reveal style="--reveal-i:2">
+        <Visual {...visual} ratio="4 / 5" priority sizes="(min-width: 64rem) 40vw, 100vw" showCaption={false} />
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .page-hero { padding-block: clamp(2.5rem, 2rem + 4vw, 6rem) var(--section); }
+  .page-hero__grid { display: grid; gap: var(--sp-7); align-items: end; }
+  .page-hero__eyebrow { display: flex; align-items: center; gap: var(--sp-3); color: var(--c-bordeaux); margin-bottom: var(--sp-5); }
+  .page-hero__index { font-size: 1rem; letter-spacing: 0; text-transform: none; color: var(--c-vite); }
+  .page-hero__line { width: 3rem; height: 1px; background: currentColor; }
+  .page-hero h1 { max-width: 14ch; }
+  .page-hero__lead { margin-top: var(--sp-6); max-width: 40ch; color: var(--fg); }
+
+  @media (min-width: 64rem) {
+    .page-hero--visual .page-hero__grid { grid-template-columns: 7fr 4fr; gap: var(--sp-9); }
+    .page-hero__visual { margin-bottom: calc(var(--section) * -0.35); }
+  }
+</style>

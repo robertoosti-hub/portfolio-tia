@@ -1,0 +1,294 @@
+---
+/**
+ * HOME — la prima impressione.
+ * Sezioni: hero · introduzione · tre competenze · progetto futuro ·
+ * anteprima esperienze · indice del portfolio.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Visual from '@/components/Visual.astro';
+import SectionHead from '@/components/SectionHead.astro';
+import ExperienceList from '@/components/ExperienceList.astro';
+import { site, nav } from '@/config/site';
+import { profile } from '@/data/profile';
+import { project } from '@/data/company';
+import { url } from '@/utils/url';
+
+const featured = (await getCollection('esperienze', (e) => e.data.featured))
+  .sort((a, b) => b.data.start.valueOf() - a.data.start.valueOf())
+  .slice(0, 3);
+
+const sectionNotes: Record<string, string> = {
+  'chi-sono/': 'Storia, valori, obiettivi',
+  'progetto/': 'Maso Larici e “Terrazze vive”',
+  'formazione/': 'Il percorso TIA, competenze, CV',
+  'esperienze/': 'Stage, vigneto, moduli, elaborati',
+  'interessi/': 'Montagna, fotografia, tecnologia',
+  'documenti/': 'CV, lettera, tesina, attestati',
+};
+---
+
+<BaseLayout title={site.author} type="profile">
+  <!-- HERO ---------------------------------------------------------------->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__media">
+      <Visual {...profile.hero} priority sizes="(min-width: 64rem) 62vw, 100vw" showCaption={false} />
+    </div>
+    <div class="container hero__content">
+      <p class="hero__kicker label" data-reveal>Portfolio professionale · a.s. 2026/27</p>
+      <h1 id="hero-title" class="hero__name" data-reveal style="--reveal-i:1">
+        <span>{profile.firstName}</span>
+        <span class="hero__surname">{profile.lastName}</span>
+      </h1>
+      <p class="hero__tagline" data-reveal style="--reveal-i:2">
+        Coltivo competenze.<br /><em>Progetto il futuro.</em>
+      </p>
+      <ul class="hero__meta" role="list" data-reveal style="--reveal-i:3">
+        <li><span class="label">Percorso</span>4° anno · Tecnico Imprenditore Agricolo</li>
+        <li><span class="label">Scuola</span>Fondazione Edmund Mach, San Michele all’Adige</li>
+        <li><span class="label">Focus</span>Viticoltura sostenibile di montagna</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- INTRODUZIONE --------------------------------------------------------->
+  <section class="section intro" aria-labelledby="intro-title">
+    <div class="container grid">
+      <p class="label intro__label lg:span-3" data-reveal><span class="numeral">01</span> Presentazione</p>
+      <div class="lg:span-6">
+        <h2 id="intro-title" class="visually-hidden">Presentazione</h2>
+        <p class="intro__text" data-reveal>{profile.intro}</p>
+        <div class="intro__links" data-reveal style="--reveal-i:1">
+          <a class="btn" href={url('chi-sono/')}>La mia storia <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="arrow-link" href={url('documenti/cv-it/')}>Curriculum vitae <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="intro__portrait lg:span-3" data-reveal style="--reveal-i:2">
+        <Visual {...profile.portrait} ratio="3 / 4" sizes="(min-width: 64rem) 22vw, 60vw" showCaption={false} />
+      </div>
+    </div>
+  </section>
+
+  <!-- TRE COMPETENZE ------------------------------------------------------>
+  <section class="section section--carta" aria-labelledby="skills-title">
+    <div class="container">
+      <SectionHead index="02" label="Competenze" id="skills-title">
+        Tre cose che so fare, <em>e che voglio fare meglio</em>
+      </SectionHead>
+      <ol class="skills" role="list">
+        {profile.coreSkills.map((s, i) => (
+          <li class="skill" data-reveal style={`--reveal-i:${i}`}>
+            <span class="skill__num numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="skill__title">{s.title}</h3>
+            <p class="skill__text">{s.text}</p>
+            <ul class="skill__points" role="list">
+              {s.points.map((p) => <li>{p}</li>)}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- PROGETTO FUTURO ----------------------------------------------------->
+  <section class="section section--bordeaux project" aria-labelledby="project-title">
+    <div class="container grid project__grid">
+      <div class="project__media lg:span-5" data-reveal>
+        <Visual {...project.visual} ratio="4 / 5" sizes="(min-width: 64rem) 38vw, 100vw" showCaption={false} />
+      </div>
+      <div class="project__body lg:span-6 lg:start-7">
+        <p class="label" data-reveal><span class="numeral">03</span> Progetto futuro · {project.kicker.split('·')[1]}</p>
+        <h2 id="project-title" class="project__title" data-reveal style="--reveal-i:1">
+          Terrazze <em>vive</em>
+        </h2>
+        <p class="lead" data-reveal style="--reveal-i:2">{project.summary}</p>
+        <ul class="project__verbs" role="list" data-reveal style="--reveal-i:3">
+          {project.objectives.map((o) => <li>{o.title}</li>)}
+        </ul>
+        <a class="btn" href={url('progetto/#progetto')} data-reveal style="--reveal-i:4">
+          Scopri il progetto <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESPERIENZE ---------------------------------------------------------->
+  <section class="section" aria-labelledby="xp-title">
+    <div class="container">
+      <SectionHead index="04" label="Esperienze" id="xp-title" intro="Una selezione dal lavoro in campo, in azienda e a scuola. Ogni scheda racconta cosa ho fatto e cosa ho imparato.">
+        Imparare <em>sul campo</em>
+      </SectionHead>
+      <ExperienceList items={featured} />
+      <p class="xp-more" data-reveal>
+        <a class="arrow-link" href={url('esperienze/')}>Tutte le esperienze <span class="arrow" aria-hidden="true">→</span></a>
+      </p>
+    </div>
+  </section>
+
+  <!-- INDICE DEL PORTFOLIO ------------------------------------------------>
+  <section class="section section--vite" aria-labelledby="index-title">
+    <div class="container">
+      <SectionHead index="05" label="Indice" id="index-title">Sfoglia il <em>portfolio</em></SectionHead>
+      <ul class="toc" role="list">
+        {nav.map((item, i) => (
+          <li data-reveal style={`--reveal-i:${i % 3}`}>
+            <a class="toc__link" href={url(item.href)}>
+              <span class="toc__num numeral">{String(i + 1).padStart(2, '0')}</span>
+              <span class="toc__label">{item.label}</span>
+              <span class="toc__note">{sectionNotes[item.href]}</span>
+              <span class="toc__arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* --- HERO --- */
+  .hero {
+    position: relative;
+    display: grid;
+    margin-top: calc(var(--header-h) * -1);
+    padding-top: var(--header-h);
+  }
+  /* Mobile: immagine in apertura, poi il nome in grande */
+  .hero__media {
+    aspect-ratio: 4 / 3;
+    width: 100%;
+  }
+  .hero__content { position: relative; z-index: 1; padding-block: var(--sp-6) var(--sp-7); }
+  .hero__kicker { color: var(--c-bordeaux); margin-bottom: var(--sp-4); }
+  .hero__name {
+    display: flex;
+    flex-direction: column;
+    font-size: clamp(4.25rem, 19vw, 8rem);
+    font-weight: 300;
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    font-variation-settings: 'SOFT' 100, 'opsz' 144;
+  }
+  .hero__surname { font-style: italic; color: var(--c-bordeaux); padding-left: 0.45em; }
+  .hero__tagline {
+    margin-top: var(--sp-6);
+    font-family: var(--font-serif);
+    font-size: var(--fs-h4);
+    line-height: 1.25;
+    color: var(--c-vite);
+  }
+  .hero__tagline em { color: var(--c-bordeaux); }
+  .hero__meta { display: grid; gap: var(--sp-4); margin-top: var(--sp-6); font-size: var(--fs-sm); }
+  .hero__meta li { display: grid; gap: 0.15rem; padding-top: var(--sp-3); border-top: 1px solid var(--c-linea); }
+  .hero__meta .label { color: var(--c-muted); font-size: 0.6875rem; }
+
+  @media (min-width: 64rem) {
+    .hero { min-height: min(100vh, 62rem); grid-template-columns: 1fr; }
+    .hero__media {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 62%;
+      max-height: none;
+      aspect-ratio: auto;
+    }
+    .hero__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-block: var(--sp-9) var(--sp-8);
+    }
+    .hero__name { font-size: clamp(6rem, 1rem + 10vw, 11.5rem); }
+    .hero__meta { grid-template-columns: repeat(3, minmax(0, 16rem)); gap: var(--col-gap); }
+    .hero__meta li { background: color-mix(in srgb, var(--c-avorio) 88%, transparent); padding: var(--sp-3) var(--sp-4) var(--sp-4); border-top-color: var(--c-vite); }
+    .hero__tagline { max-width: 24ch; }
+  }
+
+  /* --- INTRO --- */
+  .intro__label { color: var(--c-bordeaux); display: flex; gap: var(--sp-3); align-items: baseline; padding-top: 0.6rem; }
+  .intro__label .numeral { font-size: 1rem; letter-spacing: 0; color: var(--c-vite); }
+  .intro__text {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h3);
+    line-height: 1.32;
+    font-weight: 330;
+    color: var(--c-vite);
+    letter-spacing: -0.01em;
+  }
+  .intro__text::first-letter {
+    float: left;
+    font-size: 3.6em;
+    line-height: 0.82;
+    padding: 0.06em 0.08em 0 0;
+    color: var(--c-bordeaux);
+    font-style: italic;
+  }
+  .intro__links { display: flex; flex-wrap: wrap; gap: var(--sp-5); align-items: center; margin-top: var(--sp-7); }
+  .intro__portrait { max-width: 18rem; }
+  @media (min-width: 64rem) { .intro__portrait { margin-top: 12rem; } }
+
+  /* --- COMPETENZE --- */
+  .skills { display: grid; gap: var(--sp-7); }
+  .skill { display: grid; align-content: start; gap: var(--sp-4); }
+  .skill__num {
+    font-size: clamp(4.5rem, 3rem + 5vw, 8rem);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--c-vite);
+    font-style: italic;
+  }
+  .skill__title { font-size: var(--fs-h3); }
+  .skill__text { color: var(--fg); max-width: 38ch; }
+  .skill__points { display: grid; gap: var(--sp-2); margin-top: var(--sp-2); font-size: var(--fs-sm); }
+  .skill__points li { display: flex; gap: var(--sp-3); align-items: baseline; }
+  .skill__points li::before { content: ''; flex: none; width: 1rem; height: 1px; background: var(--c-bordeaux); transform: translateY(-0.3em); }
+  @media (min-width: 48rem) {
+    .skills { grid-template-columns: repeat(3, 1fr); gap: 0; }
+    .skill { padding-inline: var(--col-gap); border-left: 1px solid var(--c-linea); }
+    .skill:first-child { padding-left: 0; border-left: 0; }
+    .skill:nth-child(2) { margin-top: var(--sp-8); }
+    .skill:nth-child(3) { margin-top: calc(var(--sp-8) * 2); }
+  }
+
+  /* --- PROGETTO --- */
+  .project__grid { align-items: center; }
+  .project__body > * + * { margin-top: var(--sp-5); }
+  .project__title { font-size: var(--fs-h1); font-weight: 300; }
+  .project__verbs { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); font-family: var(--font-serif); font-style: italic; font-size: var(--fs-h4); }
+  .project__verbs li:not(:last-child)::after { content: '·'; margin-left: var(--sp-5); font-style: normal; opacity: 0.6; }
+  .project__body .btn { margin-top: var(--sp-6); }
+  @media (min-width: 64rem) { .project__media { margin-block: calc(var(--section) * -1.4) 0; } }
+
+  /* --- ESPERIENZE --- */
+  .xp-more { margin-top: var(--sp-6); text-align: right; }
+
+  /* --- INDICE --- */
+  .toc { display: grid; border-top: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); }
+  .toc li { border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 22%, transparent); }
+  .toc__link {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: baseline;
+    gap: var(--sp-1) var(--sp-4);
+    padding-block: var(--sp-5);
+    text-decoration: none;
+  }
+  .toc__num { font-size: 1rem; color: var(--c-salvia); }
+  .toc__label {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h3);
+    font-weight: 330;
+    line-height: 1.1;
+    transition: transform var(--dur) var(--ease-out), font-style var(--dur);
+  }
+  .toc__note { grid-column: 2; font-size: var(--fs-sm); color: var(--c-salvia); }
+  .toc__arrow { grid-row: 1; grid-column: 3; font-size: 1.5rem; transition: transform var(--dur) var(--ease-out); }
+  .toc__link:hover .toc__label, .toc__link:focus-visible .toc__label { font-style: italic; transform: translateX(0.5rem); }
+  .toc__link:hover .toc__arrow, .toc__link:focus-visible .toc__arrow { transform: translateX(0.4rem) rotate(-45deg); }
+  @media (min-width: 48rem) {
+    .toc { grid-template-columns: 1fr 1fr; column-gap: var(--col-gap); }
+    .toc__link { grid-template-columns: 3rem 1fr auto; }
+    .toc__note { grid-column: 2; }
+  }
+</style>

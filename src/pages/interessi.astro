@@ -1,0 +1,120 @@
+---
+/**
+ * INTERESSI PERSONALI — layout fotografico editoriale.
+ * Ogni interesse alterna posizione e proporzioni dell'immagine
+ * per creare il ritmo di un servizio di rivista.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Visual from '@/components/Visual.astro';
+import Badge from '@/components/Badge.astro';
+import { interests } from '@/data/interests';
+
+const ratios = ['16 / 9', '3 / 2', '3 / 2', '4 / 5']; // il mirino (fotografia) richiede il formato 3:2 completo
+---
+
+<BaseLayout
+  title="Interessi personali"
+  description="Corsa in montagna, fotografia del paesaggio vitato, sensori fatti in casa e volontariato per i muretti a secco: gli interessi di Matteo Ferrari e cosa gli hanno insegnato."
+>
+  <PageHero
+    index="05"
+    eyebrow="Interessi personali"
+    lead="Fuori dalla scuola e dal vigneto. Ma non troppo lontano: ognuna di queste passioni mi ha lasciato qualcosa che uso anche nel lavoro."
+  >
+    <Fragment slot="title">Fuori dal filare, <em>sempre all’aperto</em></Fragment>
+    <nav class="jump" aria-label="Interessi in questa pagina" data-reveal style="--reveal-i:3">
+      <ul role="list">
+        {interests.map((it, i) => (
+          <li><a href={`#${it.id}`}><span class="numeral">{String(i + 1).padStart(2, '0')}</span> {it.kicker}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </PageHero>
+
+  {interests.map((it, i) => (
+    <article id={it.id} class:list={['story', `story--${i + 1}`, { 'section--carta': i % 2 === 1 }]} aria-labelledby={`${it.id}-title`}>
+      <div class="container story__grid">
+        <div class="story__media" data-reveal>
+          <Visual {...it.visual} ratio={ratios[i]} sizes="(min-width: 64rem) 60vw, 100vw" />
+        </div>
+        <div class="story__text">
+          <p class="label story__kicker" data-reveal>
+            <span class="numeral">{String(i + 1).padStart(2, '0')}</span> {it.kicker}
+          </p>
+          <h2 id={`${it.id}-title`} data-reveal style="--reveal-i:1">{it.title}</h2>
+          <p class="story__body" data-reveal style="--reveal-i:2">{it.text}</p>
+          <blockquote class="story__take" data-reveal style="--reveal-i:3">
+            <p>{it.takeaway}</p>
+          </blockquote>
+          <ul class="story__tags" role="list" data-reveal style="--reveal-i:4">
+            {it.facts.map((f) => <li>{f}</li>)}
+          </ul>
+        </div>
+      </div>
+    </article>
+  ))}
+
+  <section class="container closing">
+    <p><Badge type="dimostrativo" /> Interessi di un personaggio fittizio. Raccontane di veri: anche un hobby “piccolo” dice molto, se spieghi cosa ti ha insegnato.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .jump { margin-top: var(--sp-7); }
+  .jump ul { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); }
+  .jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--c-linea);
+    border-radius: 999px;
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    transition: background-color var(--dur), border-color var(--dur), color var(--dur);
+  }
+  .jump a:hover { background: var(--c-vite); border-color: var(--c-vite); color: var(--c-avorio); }
+  .jump .numeral { font-size: 0.85em; color: var(--c-bordeaux); }
+  .jump a:hover .numeral { color: var(--c-salvia); }
+
+  .story { padding-block: var(--section); }
+  .story__grid { display: grid; gap: var(--sp-6); }
+  .story__kicker { display: flex; gap: var(--sp-3); align-items: baseline; color: var(--c-bordeaux); }
+  .story__kicker .numeral { font-size: 1rem; letter-spacing: 0; color: var(--c-vite); }
+  .story h2 { margin-top: var(--sp-4); max-width: 16ch; }
+  .story__body { margin-top: var(--sp-5); max-width: 52ch; }
+  .story__take {
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-vite);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: var(--fs-h4);
+    line-height: 1.35;
+    color: var(--c-bordeaux);
+    max-width: 34ch;
+  }
+  .story__tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-5); }
+  .story__tags li { padding: 0.25em 0.8em; border: 1px solid var(--c-linea); border-radius: 999px; font-size: var(--fs-xs); color: var(--fg-muted); }
+
+  @media (min-width: 64rem) {
+    .story__grid { grid-template-columns: repeat(12, 1fr); column-gap: var(--col-gap); align-items: end; }
+    /* 1: immagine panoramica, testo che si sovrappone in basso a destra */
+    .story--1 .story__media { grid-column: 1 / 11; grid-row: 1; }
+    .story--1 .story__text { grid-column: 7 / 13; grid-row: 2; margin-top: -9rem; position: relative; background: var(--c-avorio); padding: var(--sp-6) 0 0 var(--sp-6); }
+    /* 2: testo a sinistra, immagine verticale a destra */
+    .story--2 .story__text { grid-column: 1 / 6; grid-row: 1; padding-bottom: var(--sp-8); }
+    .story--2 .story__media { grid-column: 7 / 13; grid-row: 1; }
+    /* 3: immagine a sinistra fino al bordo, testo a destra in alto */
+    .story--3 .story__media { grid-column: 1 / 8; margin-left: calc(var(--gutter) * -1); }
+    .story--3 .story__text { grid-column: 9 / 13; align-self: start; }
+    /* 4: immagine stretta al centro-destra, testo a sinistra in basso */
+    .story--4 .story__text { grid-column: 2 / 7; grid-row: 1; }
+    .story--4 .story__media { grid-column: 8 / 12; grid-row: 1; margin-top: calc(var(--sp-9) * -1); }
+  }
+
+  .closing { padding-block: var(--sp-7) var(--section); }
+  .closing p { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); font-size: var(--fs-sm); color: var(--fg-muted); max-width: 70ch; }
+</style>

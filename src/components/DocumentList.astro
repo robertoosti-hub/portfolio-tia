@@ -1,0 +1,77 @@
+---
+/**
+ * ELENCO DOCUMENTI — ogni documento mostra il suo stato reale:
+ *  demo        → apre la pagina del documento dimostrativo
+ *  da-caricare → apre lo stato vuoto con le istruzioni
+ *  pubblicato  → scarica il PDF reale presente in /public
+ * Non esistono pulsanti "Scarica" verso file inesistenti.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { url } from '@/utils/url';
+
+interface Props { items: CollectionEntry<'documenti'>[]; compact?: boolean; }
+const { items, compact = false } = Astro.props;
+const statusLabel = { demo: 'Esempio dimostrativo', 'da-caricare': 'Da caricare', pubblicato: 'PDF disponibile' } as const;
+---
+
+<ul class:list={['docs', { 'docs--compact': compact }]} role="list">
+  {items.map((doc, i) => {
+    const published = doc.data.status === 'pubblicato' && doc.data.file;
+    const href = published ? url(doc.data.file!) : url(`documenti/${doc.id}/`);
+    return (
+      <li class:list={['doc', `doc--${doc.data.status}`]} data-reveal style={`--reveal-i:${i % 4}`}>
+        <a class="doc__link" href={href} hreflang={doc.data.lang !== 'it' ? doc.data.lang : undefined}>
+          <span class="doc__kind label">{doc.data.kind}{doc.data.lang === 'en' && ' · EN'}</span>
+          <span class="doc__title">{doc.data.title}</span>
+          {!compact && <span class="doc__summary muted">{doc.data.summary}</span>}
+          <span class="doc__status">
+            <span class="doc__dot" aria-hidden="true"></span>
+            {statusLabel[doc.data.status]}
+            <span class="doc__arrow" aria-hidden="true">{published ? '↓' : '→'}</span>
+          </span>
+        </a>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    border-top: 1px solid var(--c-linea);
+    border-left: 1px solid var(--c-linea);
+  }
+  .doc { border-right: 1px solid var(--c-linea); border-bottom: 1px solid var(--c-linea); }
+  .doc__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    height: 100%;
+    min-height: 13rem;
+    padding: var(--sp-5);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color var(--dur) var(--ease-out);
+  }
+  .docs--compact .doc__link { min-height: 9rem; }
+  .doc__kind { color: var(--accent); }
+  .doc__title { font-family: var(--font-serif); font-size: var(--fs-h4); line-height: 1.2; color: var(--heading); }
+  .doc__summary { font-size: var(--fs-sm); line-height: 1.5; }
+  .doc__status {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .doc__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c-vite); }
+  .doc--da-caricare .doc__dot { background: transparent; border: 1px dashed var(--c-bordeaux); }
+  .doc--da-caricare .doc__status { color: var(--c-bordeaux); }
+  .doc__arrow { margin-left: auto; font-size: 1.1rem; transition: transform var(--dur) var(--ease-out); }
+  .doc__link:hover { background: var(--c-carta); }
+  .doc__link:hover .doc__arrow, .doc__link:focus-visible .doc__arrow { transform: translateX(0.3rem); }
+  .doc__link:focus-visible { outline-offset: -3px; }
+</style>

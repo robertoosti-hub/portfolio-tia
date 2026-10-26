@@ -1,0 +1,94 @@
+---
+/**
+ * LAYOUT BASE — struttura comune a tutte le pagine.
+ */
+import '@fontsource-variable/fraunces/opsz.css';
+import '@fontsource-variable/fraunces/opsz-italic.css';
+import '@fontsource-variable/instrument-sans/index.css';
+import '@/styles/global.css';
+import Seo from '@/components/Seo.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { site } from '@/config/site';
+import { url } from '@/utils/url';
+// Font del titolo principale: precaricato per evitare il "salto" del testo
+import frauncesLatin from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'profile';
+  noindex?: boolean;
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#283f35" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="preload" href={frauncesLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="sitemap" href={url('sitemap-index.xml')} />
+    <Seo {...props} />
+    <!-- Segnala che JavaScript è attivo: abilita le animazioni di ingresso -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenuto">Vai al contenuto</a>
+    {site.demo && (
+      <aside class="demo-strip" aria-label="Avviso">
+        <span class="demo-strip__dot" aria-hidden="true"></span>
+        Portfolio dimostrativo · personaggio e azienda di fantasia ·
+        <a href={url('crediti/')}>cosa è reale e cosa no</a>
+      </aside>
+    )}
+    <span id="top"></span>
+    <Header />
+    <main id="contenuto" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Animazioni di ingresso: gli elementi [data-reveal] compaiono quando
+      // entrano nello schermo. Con "riduci movimento" il CSS le disattiva.
+      const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => entries.forEach((e) => {
+            if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+          }),
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        items.forEach((el) => io.observe(el));
+      } else {
+        items.forEach((el) => el.classList.add('is-visible'));
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus { outline: none; }
+  .demo-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    padding: 0.45rem var(--gutter);
+    background: var(--c-antracite);
+    color: var(--c-avorio);
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    text-align: center;
+  }
+  .demo-strip a { color: var(--c-salvia); }
+  .demo-strip__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-salvia); }
+</style>

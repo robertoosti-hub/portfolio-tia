@@ -1,0 +1,327 @@
+/* ==========================================================================
+   STILI GLOBALI
+   1. Reset essenziale     5. Link e pulsanti
+   2. Tipografia            6. Animazioni di ingresso
+   3. Layout e griglia      7. Accessibilità
+   4. Elementi editoriali   8. Transizioni tra pagine
+   Gli stili specifici dei componenti sono nei file .astro (scoped).
+   ========================================================================== */
+
+@import './tokens.css';
+
+/* 1. RESET ---------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+img, svg, picture, video { display: block; max-width: 100%; height: auto; }
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
+p, li, dd, figcaption { text-wrap: pretty; }
+
+::selection { background: var(--c-bordeaux); color: var(--c-avorio); }
+
+/* 2. TIPOGRAFIA ----------------------------------------------------------- */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  color: var(--heading);
+  font-weight: 380;
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  font-variation-settings: 'SOFT' 50;
+}
+
+h1 { font-size: var(--fs-h1); line-height: var(--lh-tight); letter-spacing: -0.03em; }
+h2 { font-size: var(--fs-h2); line-height: 1.05; letter-spacing: -0.025em; }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-h4); }
+
+em, .italic { font-style: italic; }
+h1 em, h2 em, h3 em { font-weight: 300; color: var(--accent); }
+
+.lead {
+  font-family: var(--font-serif);
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  font-weight: 350;
+  max-width: 36ch;
+}
+
+.prose { max-width: var(--measure); }
+.prose > * + * { margin-top: 1.1em; }
+.prose h2 { font-size: var(--fs-h3); margin-top: 2em; }
+.prose h3 { font-size: var(--fs-h4); margin-top: 1.8em; }
+.prose ul, .prose ol { padding-left: 1.2em; }
+.prose li + li { margin-top: 0.4em; }
+.prose li::marker { color: var(--accent); }
+.prose strong { font-weight: 600; color: var(--heading); }
+
+/* Etichetta maiuscola: usata per sezioni, categorie, metadati */
+.label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.muted { color: var(--fg-muted); }
+.numeral {
+  font-family: var(--font-serif);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 300;
+}
+
+/* 3. LAYOUT --------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Griglia a 12 colonne: su mobile ogni elemento occupa tutta la larghezza,
+   da tablet in su si usano le classi .span-* e .start-* per l'asimmetria. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: var(--sp-6);
+}
+.grid > * { grid-column: 1 / -1; }
+
+@media (min-width: 48rem) {
+  .md\:span-4 { grid-column: span 4; }
+  .md\:span-5 { grid-column: span 5; }
+  .md\:span-6 { grid-column: span 6; }
+  .md\:span-7 { grid-column: span 7; }
+  .md\:span-8 { grid-column: span 8; }
+}
+@media (min-width: 64rem) {
+  /* --span memorizza la larghezza, così .lg:start-* può combinarsi con .lg:span-* */
+  .lg\:span-3 { --span: 3; grid-column: span 3; }
+  .lg\:span-4 { --span: 4; grid-column: span 4; }
+  .lg\:span-5 { --span: 5; grid-column: span 5; }
+  .lg\:span-6 { --span: 6; grid-column: span 6; }
+  .lg\:span-7 { --span: 7; grid-column: span 7; }
+  .lg\:span-8 { --span: 8; grid-column: span 8; }
+  .lg\:start-2 { grid-column: 2 / span var(--span, 6); }
+  .lg\:start-5 { grid-column: 5 / span var(--span, 6); }
+  .lg\:start-6 { grid-column: 6 / span var(--span, 6); }
+  .lg\:start-7 { grid-column: 7 / span var(--span, 6); }
+  .lg\:start-8 { grid-column: 8 / span var(--span, 5); }
+}
+
+.section { padding-block: var(--section); }
+.section--carta { background: var(--c-carta); }
+.section--vite {
+  --bg: var(--c-vite);
+  --fg: var(--c-avorio);
+  --fg-muted: var(--c-salvia);
+  --heading: var(--c-avorio);
+  --accent: var(--c-salvia);
+  --focus: var(--c-avorio);
+  background: var(--bg);
+  color: var(--fg);
+}
+.section--bordeaux {
+  --bg: var(--c-bordeaux);
+  --fg: var(--c-avorio);
+  --fg-muted: #e6d9d4;            /* 6.1:1 su bordeaux */
+  --heading: var(--c-avorio);
+  --accent: #f0d8c8;
+  --focus: var(--c-avorio);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.stack > * + * { margin-top: var(--stack, var(--sp-5)); }
+
+/* 4. ELEMENTI EDITORIALI ------------------------------------------------- */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--c-linea);
+}
+.section--vite .rule,
+.section--bordeaux .rule { border-color: color-mix(in srgb, currentColor 25%, transparent); }
+
+/* 5. LINK E PULSANTI ------------------------------------------------------ */
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+
+.prose a, .link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  transition: text-decoration-color var(--dur-fast);
+}
+.prose a:hover, .link:hover { text-decoration-color: currentColor; }
+
+/* Pulsante principale: riempimento che "sale" al passaggio del mouse */
+.btn {
+  --btn-fg: var(--c-avorio);
+  --btn-bg: var(--c-vite);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  min-height: 3rem;                /* area di tocco ≥ 24px (WCAG 2.5.8) */
+  padding: 0.85em 1.5em;
+  border: 1px solid var(--btn-bg);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color var(--dur) var(--ease-out), border-color var(--dur);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--c-bordeaux);
+  transform: translateY(101%);
+  transition: transform var(--dur) var(--ease-out);
+}
+.btn:hover::before, .btn:focus-visible::before { transform: translateY(0); }
+.btn:hover { border-color: var(--c-bordeaux); }
+
+.btn--ghost {
+  --btn-fg: var(--heading);
+  background: transparent;
+  border-color: currentColor;
+  color: var(--btn-fg);
+}
+.btn--ghost:hover, .btn--ghost:focus-visible { color: var(--c-avorio); }
+.section--vite .btn--ghost::before { background: var(--c-avorio); }
+.section--vite .btn--ghost:hover,
+.section--vite .btn--ghost:focus-visible { color: var(--c-vite); border-color: var(--c-avorio); }
+.section--bordeaux .btn { --btn-bg: var(--c-avorio); --btn-fg: var(--c-bordeaux); }
+.section--bordeaux .btn::before { background: var(--c-vite); }
+.section--bordeaux .btn:hover { color: var(--c-avorio); border-color: var(--c-vite); }
+
+.btn .arrow, .arrow-link .arrow { transition: transform var(--dur) var(--ease-out); }
+.btn:hover .arrow, .btn:focus-visible .arrow,
+.arrow-link:hover .arrow, .arrow-link:focus-visible .arrow { transform: translateX(0.3em); }
+
+/* Link testuale con freccia e sottolineatura animata */
+.arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: 2.75rem;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+  color: var(--heading);
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 0.6rem) / 0 1px no-repeat;
+  transition: background-size var(--dur) var(--ease-out);
+}
+.arrow-link:hover, .arrow-link:focus-visible { background-size: calc(100% - 1.6em) 1px; }
+
+/* 6. ANIMAZIONI DI INGRESSO ---------------------------------------------
+   Gli elementi con [data-reveal] compaiono con una dissolvenza leggera.
+   Senza JavaScript o con "riduci movimento" restano semplicemente visibili. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+    transition-delay: calc(var(--reveal-i, 0) * 90ms);
+  }
+  .js [data-reveal].is-visible { opacity: 1; transform: none; }
+}
+
+/* 7. ACCESSIBILITÀ ------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--c-vite);
+  color: var(--c-avorio);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 8. TRANSIZIONI TRA PAGINE ----------------------------------------------
+   View Transitions API "cross-document": nessun JavaScript richiesto.
+   I browser che non la supportano caricano la pagina normalmente.   */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation: vt-out 260ms var(--ease-out) both; }
+  ::view-transition-new(root) { animation: vt-in 520ms var(--ease-out) both; }
+}
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(12px); } }
+
+/* 9. STAMPA ----------------------------------------------------------------
+   I documenti (CV, lettera...) si stampano o si salvano in PDF dal browser. */
+@media print {
+  .header, .footer, .demo-strip, .skip-link, .no-print { display: none !important; }
+  body { background: #fff; font-size: 10.5pt; }
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; }
+  a { text-decoration: none; }
+  @page { margin: 16mm 18mm; }
+}

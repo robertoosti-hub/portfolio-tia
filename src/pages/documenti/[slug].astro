@@ -1,0 +1,183 @@
+---
+/**
+ * PAGINA DOCUMENTO
+ *  demo        → documento impaginato come un foglio A4, stampabile
+ *  da-caricare → stato vuoto con istruzioni
+ *  pubblicato  → link al PDF reale
+ */
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+import { url } from '@/utils/url';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('documenti');
+  return docs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props { entry: CollectionEntry<'documenti'>; }
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const isCv = d.kind === 'CV';
+const en = d.lang === 'en';
+---
+
+<BaseLayout title={`${d.title}${en ? ' (EN)' : ''}`} description={d.summary} type="article">
+  <div class="container doc-page">
+    <nav class="crumbs label no-print" aria-label="Percorso di navigazione">
+      <a href={url('documenti/')}>Documenti</a> <span aria-hidden="true">/</span> <span aria-current="page">{d.kind}{en && ' · EN'}</span>
+    </nav>
+
+    {d.status === 'demo' && (
+      <>
+        <div class="toolbar no-print">
+          <p class="toolbar__note"><span class="dot" aria-hidden="true"></span> Esempio dimostrativo — contenuti simulati, da sostituire con i tuoi.</p>
+          <button class="btn" type="button" data-print>Stampa o salva in PDF</button>
+        </div>
+        <article class:list={['paper', { 'paper--cv': isCv }]} lang={d.lang}>
+          <p class="paper__watermark" aria-hidden="true">{en ? 'Sample' : 'Esempio'}</p>
+          <header class="paper__head">
+            {(isCv || d.kind === 'Lettera') ? (
+              <>
+                <p class="label paper__kind">{d.title}</p>
+                <h1 class="paper__name">{site.author}</h1>
+                <p class="paper__contact">
+                  {site.contact.city} · {site.contact.email}
+                  <span class="paper__demo">{en ? '(fictional contact details)' : '(recapiti fittizi)'}</span>
+                </p>
+              </>
+            ) : (
+              <>
+                <p class="label paper__kind">{d.kind} · {site.author}</p>
+                <h1 class="paper__title">{d.title}</h1>
+              </>
+            )}
+          </header>
+          <div class="prose paper__body"><Content /></div>
+          <footer class="paper__foot">
+            {en ? 'Demonstrative document for teaching purposes — fictional person.' : 'Documento dimostrativo a uso didattico — personaggio fittizio.'}
+          </footer>
+        </article>
+      </>
+    )}
+
+    {d.status === 'da-caricare' && (
+      <section class="empty" aria-labelledby="empty-title">
+        <div class="empty__art" aria-hidden="true">
+          <svg viewBox="0 0 120 150" width="120" height="150" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M10 6h70l30 30v108H10z" stroke-dasharray="6 5" />
+            <path d="M80 6v30h30" />
+            <path d="M30 70h60M30 88h60M30 106h38" stroke-opacity=".35" />
+          </svg>
+        </div>
+        <div class="empty__text">
+          <p class="label empty__label">{d.kind} · da caricare</p>
+          <h1 id="empty-title">{d.title}</h1>
+          <p class="lead">{d.summary}</p>
+          <div class="prose empty__how"><Content /></div>
+          <a class="btn btn--ghost" href={url('documenti/')}>Torna all’archivio <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    )}
+
+    {d.status === 'pubblicato' && d.file && (
+      <section class="published">
+        <p class="label">{d.kind}</p>
+        <h1>{d.title}</h1>
+        <p class="lead">{d.summary}</p>
+        <div class="prose"><Content /></div>
+        <a class="btn" href={url(d.file)} download>Scarica il PDF <span class="arrow" aria-hidden="true">↓</span></a>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+</script>
+
+<style>
+  .doc-page { padding-block: var(--sp-7) var(--section); }
+  .crumbs { display: flex; gap: var(--sp-2); color: var(--c-muted); margin-bottom: var(--sp-5); }
+  .crumbs a { color: var(--c-bordeaux); text-decoration: none; }
+  .crumbs a:hover { text-decoration: underline; }
+
+  .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--sp-4); max-width: 52rem; margin: 0 auto var(--sp-5); }
+  .toolbar__note { display: flex; align-items: center; gap: 0.5em; font-size: var(--fs-sm); color: var(--fg-muted); }
+  .dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--c-vite); flex: none; }
+
+  /* Foglio A4 */
+  .paper {
+    position: relative;
+    max-width: 52rem;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 1rem + 4vw, 4.5rem);
+    background: #fffdf8;
+    box-shadow: 0 1px 0 var(--c-linea), 0 2rem 4rem -2rem rgb(38 40 35 / 0.25);
+    overflow: hidden;
+  }
+  .paper__watermark {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-24deg);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(5rem, 16vw, 11rem);
+    color: var(--c-bordeaux);
+    opacity: 0.06;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .paper__head { position: relative; padding-bottom: var(--sp-5); margin-bottom: var(--sp-6); border-bottom: 2px solid var(--c-vite); }
+  .paper__kind { color: var(--c-bordeaux); }
+  .paper__name { font-size: var(--fs-h2); margin-top: var(--sp-2); }
+  .paper__title { font-size: var(--fs-h2); margin-top: var(--sp-2); }
+  .paper__contact { margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--fg-muted); }
+  .paper__demo { display: block; font-size: var(--fs-xs); font-style: italic; }
+  .paper__body { position: relative; max-width: none; font-size: var(--fs-sm); }
+  .paper__body :global(h2) {
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--c-bordeaux);
+    margin-top: 2.2em;
+    padding-bottom: 0.4em;
+    border-bottom: 1px solid var(--c-linea);
+  }
+  .paper__body :global(h2:first-child) { margin-top: 0; }
+  .paper__body :global(hr) { border: 0; border-top: 1px solid var(--c-linea); margin-block: 2em 1em; }
+  .paper__foot { position: relative; margin-top: var(--sp-7); padding-top: var(--sp-4); border-top: 1px solid var(--c-linea); font-size: var(--fs-xs); color: var(--fg-muted); }
+  @media (min-width: 48rem) {
+    .paper--cv .paper__body { display: grid; grid-template-columns: 11rem 1fr; column-gap: var(--sp-6); }
+    .paper--cv .paper__body > :global(*) { grid-column: 2; margin-top: 0.6em; }
+    .paper--cv .paper__body > :global(h2) { grid-column: 1; border: 0; margin-top: 1.6em; padding-top: 0.25em; }
+    .paper--cv .paper__body > :global(h2 + *) { margin-top: 1.6em; }
+    .paper--cv .paper__body > :global(hr) { grid-column: 1 / -1; }
+    .paper--cv .paper__body > :global(h2:first-child),
+    .paper--cv .paper__body > :global(h2:first-child + *) { margin-top: 0; }
+  }
+  /* Nel CV ogni h2 apre una riga della griglia */
+  .paper--cv .paper__body > :global(h2) { grid-row-end: span 1; }
+
+  .empty { display: grid; gap: var(--sp-7); padding-block: var(--sp-7); max-width: 60rem; }
+  .empty__art { color: var(--c-bordeaux); }
+  .empty__label { color: var(--c-bordeaux); }
+  .empty__text h1 { font-size: var(--fs-h1); margin-top: var(--sp-3); }
+  .empty__text .lead { margin-top: var(--sp-5); }
+  .empty__how { margin-block: var(--sp-6); padding: var(--sp-5); border: 1px dashed var(--c-linea); font-size: var(--fs-sm); }
+  .empty__how :global(code) { font-size: 0.9em; padding: 0.1em 0.35em; background: var(--c-carta); }
+  @media (min-width: 48rem) { .empty { grid-template-columns: 10rem 1fr; } }
+
+  .published > * + * { margin-top: var(--sp-5); }
+
+  @media print {
+    .doc-page { padding: 0; max-width: none; }
+    .paper { box-shadow: none; padding: 0; max-width: none; background: #fff; }
+    .paper__watermark { opacity: 0.08; }
+  }
+</style>

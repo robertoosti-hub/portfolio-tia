@@ -1,0 +1,74 @@
+---
+/**
+ * CREDITI E TRASPARENZA — cosa è reale, cosa è simulato, licenze.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Badge from '@/components/Badge.astro';
+import { sources } from '@/config/site';
+---
+
+<BaseLayout title="Crediti e trasparenza" description="Cosa è reale e cosa è simulato in questo portfolio dimostrativo, fonti istituzionali consultate e licenze delle risorse utilizzate.">
+  <PageHero index="—" eyebrow="Crediti e trasparenza" lead="Questo è un portfolio dimostrativo realizzato come esempio per le lezioni di progettazione web e identità professionale digitale.">
+    <Fragment slot="title">Cosa è reale, <em>cosa no</em></Fragment>
+  </PageHero>
+
+  <section class="section section--carta">
+    <div class="container credits">
+      <section aria-labelledby="c1">
+        <h2 id="c1">Contenuti simulati</h2>
+        <p><Badge type="dimostrativo" /></p>
+        <ul>
+          <li><strong>Matteo Ferrari</strong> è un personaggio fittizio. Ogni somiglianza con persone reali è casuale; il portfolio non ha alcun legame con aziende vitivinicole che portano lo stesso cognome.</li>
+          <li><strong>Maso Larici</strong> e l’azienda dello stage sono aziende di fantasia: superfici, varietà, numeri e persone sono inventati.</li>
+          <li>Esperienze, biografia, interessi, progetto “Terrazze vive”, CV, lettera, abstract della tesina ed elaborato in inglese sono esempi scritti a scopo didattico.</li>
+          <li>Non sono riportati voti, valutazioni scolastiche, attestati o certificazioni: gli spazi relativi sono marcati come “da completare”.</li>
+          <li>L’indirizzo e-mail usa il dominio riservato <code>example.org</code> e non riceve posta.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="c2">
+        <h2 id="c2">Informazioni istituzionali</h2>
+        <p><Badge type="istituzionale" /></p>
+        <p>La descrizione del percorso Tecnico Imprenditore Agricolo è una sintesi delle pagine pubblicate dalla Fondazione Edmund Mach:</p>
+        <ul>
+          {[sources.cif, sources.iefp, sources.tia, sources.iscrizioni].map((s) => (
+            <li><a href={s.href} rel="external">{s.label}<span class="visually-hidden"> (sito esterno)</span></a></li>
+          ))}
+        </ul>
+        <p>Verifica: 26 ottobre 2026. Questo sito non è un canale ufficiale della Fondazione Edmund Mach e non ne utilizza loghi o fotografie.</p>
+      </section>
+
+      <section aria-labelledby="c3">
+        <h2 id="c3">Immagini</h2>
+        <p>Tutte le immagini attualmente visibili sono <strong>illustrazioni vettoriali originali</strong>, generate dal codice del sito (componente <code>Artwork</code>) e prive di vincoli di licenza. Ogni illustrazione è etichettata come “spazio foto”: va sostituita con fotografie autentiche, scattate personalmente o con licenza compatibile e relativa attribuzione.</p>
+      </section>
+
+      <section aria-labelledby="c4">
+        <h2 id="c4">Caratteri tipografici</h2>
+        <ul>
+          <li><strong>Fraunces</strong> — The Fraunces Project Authors, SIL Open Font License 1.1.</li>
+          <li><strong>Instrument Sans</strong> — The Instrument Sans Project Authors, SIL Open Font License 1.1.</li>
+        </ul>
+        <p>I font sono distribuiti tramite i pacchetti Fontsource e ospitati insieme al sito, senza richieste a servizi esterni.</p>
+      </section>
+
+      <section aria-labelledby="c5">
+        <h2 id="c5">Tecnologia</h2>
+        <p>Realizzato con Astro e CSS personalizzato, pubblicabile su GitHub Pages. Nessun cookie, nessun sistema di tracciamento.</p>
+      </section>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .credits { display: grid; gap: var(--sp-8); }
+  .credits section { display: grid; gap: var(--sp-4); max-width: 62ch; }
+  .credits h2 { font-size: var(--fs-h3); }
+  .credits ul { padding-left: 1.2em; display: grid; gap: var(--sp-3); }
+  .credits li::marker { color: var(--c-bordeaux); }
+  .credits a { color: var(--c-bordeaux); }
+  .credits strong { color: var(--c-vite); }
+  code { font-size: 0.9em; padding: 0.1em 0.35em; background: var(--c-avorio); }
+  @media (min-width: 64rem) { .credits { grid-template-columns: 1fr 1fr; column-gap: var(--sp-9); } }
+</style>

@@ -1,0 +1,108 @@
+---
+import { site, nav, sources } from '@/config/site';
+import { url } from '@/utils/url';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer section--vite">
+  <div class="container">
+    <div class="footer__top">
+      <p class="footer__claim">
+        Coltivo competenze.<br /><em>Progetto il futuro.</em>
+      </p>
+      <div class="footer__cta">
+        <p class="muted">Per uno stage, una vendemmia o una chiacchierata tra filari.</p>
+        <a class="btn btn--ghost" href={url('documenti/lettera-di-presentazione/')}>
+          Leggi la lettera di presentazione <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer__grid">
+      <nav aria-label="Sezioni del portfolio">
+        <h2 class="label footer__h">Portfolio</h2>
+        <ul role="list">
+          <li><a href={url()}>Home</a></li>
+          {nav.map((item) => <li><a href={url(item.href)}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+      <div>
+        <h2 class="label footer__h">Contatti</h2>
+        <ul role="list">
+          <li><span class="muted">E-mail (dimostrativa)</span><br />{site.contact.email}</li>
+          <li><span class="muted">Base</span><br />{site.contact.city}</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="label footer__h">Scuola</h2>
+        <ul role="list">
+          <li><a href={sources.cif.href} rel="external">Fondazione Edmund Mach – CIF <span class="visually-hidden">(sito esterno)</span>↗</a></li>
+          <li class="muted">San Michele all’Adige (TN)</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="label footer__h">Note</h2>
+        <p class="muted footer__small">{site.demoNotice} Il portfolio non è un sito ufficiale e non è affiliato alla Fondazione Edmund Mach.</p>
+        <p class="muted footer__small">Caratteri: Fraunces e Instrument Sans, SIL Open Font License. Illustrazioni originali generate per il progetto. <a href={url('crediti/')}>Crediti e licenze</a></p>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p class="label">© {year} · {site.author} · Esempio didattico</p>
+      <a class="arrow-link" href="#top">Torna su <span class="arrow" aria-hidden="true">↑</span></a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--c-vite-900); padding-block: var(--sp-9) var(--sp-5); }
+  .footer a { text-decoration: none; }
+  .footer ul a { display: inline-block; padding-block: 0.3rem; transition: color var(--dur-fast); }
+  .footer ul a:hover { color: var(--c-salvia); text-decoration: underline; }
+
+  .footer__top {
+    display: grid;
+    gap: var(--sp-6);
+    padding-bottom: var(--sp-8);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-avorio) 18%, transparent);
+  }
+  .footer__claim {
+    font-family: var(--font-serif);
+    font-size: var(--fs-h1);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-weight: 300;
+  }
+  .footer__claim em { color: var(--c-salvia); }
+  .footer__cta { display: grid; gap: var(--sp-4); align-content: end; justify-items: start; max-width: 28rem; }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--sp-6);
+    padding-block: var(--sp-7);
+    font-size: var(--fs-sm);
+  }
+  .footer__grid li + li { margin-top: var(--sp-2); }
+  .footer__h { color: var(--c-salvia); margin-bottom: var(--sp-4); font-family: var(--font-sans); }
+  .footer__small { font-size: var(--fs-xs); line-height: 1.6; }
+  .footer__small + .footer__small { margin-top: var(--sp-3); }
+  .footer__small a { text-decoration: underline; color: var(--c-avorio); }
+
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-4);
+    padding-top: var(--sp-5);
+    border-top: 1px solid color-mix(in srgb, var(--c-avorio) 18%, transparent);
+    color: var(--c-salvia);
+  }
+  .footer__bottom .arrow-link { color: var(--c-avorio); }
+
+  @media (min-width: 64rem) {
+    .footer__top { grid-template-columns: 1.6fr 1fr; }
+    .footer__grid { grid-template-columns: 1fr 1fr 1fr 1.6fr; }
+  }
+</style>
